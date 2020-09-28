@@ -31,14 +31,15 @@ def clique_tree(height, children):
 
     T = nx.generators.balanced_tree(children, height)
     T_clique = nx.Graph()
-    #print(list(nx.edges(T)))
+    print(list(nx.edges(T)))
     T_clique.add_edges_from(list(nx.edges(T)))
     for node_ in T.nodes():
         node_edges = np.array(list(T.adj[node_].keys()))
         kids = node_edges[node_edges > node_]
+        T_clique.add_node(node_, children=kids)
         T_clique.add_edges_from(list(itertools.combinations(kids,2)))
     nx.draw_spring(T_clique, with_labels=True)
-    #plt.show()
+    plt.show()
     return T_clique
 
 # Press the green button in the gutter to run the script.
