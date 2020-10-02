@@ -2,24 +2,24 @@
 """
 Created on Mon Sep 28 11:46:09 2020
 
-@author: Juango the Blue
+@author: John Meluso
 """
-import org_forms as of
+import org_struct as ostr
 
 
 class Organization(object):
     '''Defines a class Organization which contains an organization network
     structure (a.k.a. an organizational form) populated with agents.'''
 
-    def __init__(self, form="tree", specs=[4,5]):
+    def __init__(self, struct="tree", specs=[4,5]):
         '''
-        Creates an instance of class Organization with a specified form and
-        corresponding parameters for that form. The default is a standard tree
-        organizational form.
+        Creates an instance of class Organization with a specified structure and
+        corresponding parameters for that structure. The default is a standard
+        tree organizational form.
 
         Parameters
         ----------
-        form : STRING, optional
+        struct : STRING, optional
             DESCRIPTION. Defines the form or structure of the organization. The
             default is "tree".
         specs : LIST, optional
@@ -35,16 +35,19 @@ class Organization(object):
         '''
 
         # Create network graph of organization
-        if form == "tree":
-            self.graph = of.clique_tree(specs[0],specs[1])
+        if struct == "tree":
+            self.graph = ostr.clique_tree(specs[0],specs[1])
         else:
-            print("Input 'form' for 'Organization' is not valid.")
+            print("Input 'struct' for 'Organization' is not valid.")
 
         # Create an empty organization
         org = []
 
         # Create an employee for each node of the organization graph
         for node_ in self.graph:
+
+            #todo - Append agents to organization
+            org.append()
 
 
 
