@@ -33,15 +33,20 @@ def clique_tree(height, children):
     # Build balanced tree
     T = nx.generators.balanced_tree(children, height)
     T_clique = nx.Graph()
+    T_sibs = nx.Graph()
     #print(list(nx.edges(T)))
     T_clique.add_edges_from(list(nx.edges(T)))
+    T_sibs.add_nodes_from(list(nx.nodes(T)))
+
 
     # Add sibling edges
     for node_ in T.nodes():
         node_edges = np.array(list(T.adj[node_].keys()))
         kids = node_edges[node_edges > node_]
         pars = node_edges[node_edges < node_]
-        T_clique.add_edges_from(list(itertools.combinations(kids,2)))
+        new_edges = list(itertools.combinations(kids,2))
+        T_clique.add_edges_from(new_edges)
+        T_sibs.add_edges_from(new_edges)
         T_clique.add_node(node_, children=kids,parents=pars)
 
     for node_ in T.nodes():
@@ -63,13 +68,27 @@ def clique_tree(height, children):
                      in T_clique.nodes[node_]['children']])
         T_clique.add_node(node_, grandchildren=grandkids)
 
+    # Get directed graph adjacency matrix of parentage & siblings
+    parents = nx.to_numpy_array(T)
+    for ii in T.nodes():
+        for jj in T.nodes():
+            if ii < jj:
+                parents[ii,jj] = 0
+    siblings = nx.to_numpy_array(T_sibs)
+
     # Plot the graph
     print(list(nx.edges(T_clique)))
     nx.draw_spring(T_clique, with_labels=True)
     plt.show()
-    return T_clique
+    pickle.dump(T_clique, open("cliquetree_org.pickle","wb"))
+    pickle.dump(parents, open("cliquetree_parents.pickle","wb"))
+    pickle.dump(siblings, open("cliquetree_siblings.pickle","wb"))
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    premade_org = clique_tree(4, 5)
-    pickle.dump(premade_org, open("premade_org.pickle","wb"))
+    clique_tree(4, 5)
+
+
+
+
+
