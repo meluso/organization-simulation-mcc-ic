@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['Organization.py', 'model.py', 'org_struct.py', '..\\..\\..\\..\\..\\programdata\\anaconda3\\lib\\site-packages\\numpy\\core\\_dtype.py']
+recent_files = ['Organization.py', 'test_Organization.py', 'org_struct.py']
 
