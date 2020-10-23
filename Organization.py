@@ -391,6 +391,7 @@ class Organization(object):
 
         # Populate new location
         self.culture[loc_to,:] = self.culture[loc_from,:]
+        self.social[loc_to,:] = self.social[loc_from,:]
         self.from_pop[loc_to] = self.from_pop[loc_from]
         self.perf_params[loc_to,:] = self.perf_params[loc_from,:]
 
