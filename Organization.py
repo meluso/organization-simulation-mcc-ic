@@ -190,26 +190,39 @@ class Organization(object):
         # Generate culture values by first cycling through the nodes
         for ii in node_range:
 
-            # Next, check its distribution type
-            if self.pops[self.from_pop[ii]].aff_dist == "uniform":
+            # CASE 1: linear_2var
+            if self.pops[self.from_pop[ii]].aff_dist == "linear_2var":
 
-                # Sample z from a UNIFORM distribution
-                self.culture[ii,self.index_inc] = rng.uniform()
+                # Sample z from a LINEAR UNIFORM distribution
+                self.culture[ii,:] = np.array([linear_uniform()])
 
-            else:  # pops[n_].aff_dist == "beta"
+            # CASE 2: beta_2var
+            elif self.pops[self.from_pop[ii]].aff_dist == "beta_2var":
 
-                # Else sample z from a BETA distribution
-                self.culture[ii,self.index_inc] = rng.beta( \
-                   beta_a(self.pops[self.from_pop[ii]].aff_inc,
-                          self.pops[self.from_pop[ii]].aff_var),
-                   beta_b(self.pops[self.from_pop[ii]].aff_inc,
-                          self.pops[self.from_pop[ii]].aff_var))
+                # Sample z form a LINEAR BETA distribution with mean at
+                # aff_inc and var at aff_var.
+                self.culture[ii,:] = np.array([linear_beta(
+                    self.pops[self.from_pop[ii]].aff_inc,
+                    self.pops[self.from_pop[ii]].aff_var,
+                    )])
 
-        # Calculate x & y from z
-        self.culture[node_range,self.index_sim] \
-            = (1 - self.culture[node_range,self.index_inc])/2
-        self.culture[node_range,self.index_perf] \
-            = self.culture[node_range,self.index_sim]
+            # CASE 3: beta_3var
+            elif self.pops[self.from_pop[ii]].aff_dist == "beta_3var":
+
+                # Sample x from a TRIANGULAR BETA distribution with means at
+                # aff_sim & aff_perf, and both vars at aff_var.
+                self.culture[ii,:] = np.array([triangle_beta(
+                    self.pops[self.from_pop[ii]].aff_sim,
+                    self.pops[self.from_pop[ii]].aff_var,
+                    self.pops[self.from_pop[ii]].aff_perf,
+                    self.pops[self.from_pop[ii]].aff_var,
+                    )])
+
+            # CASE 4: "linear_3var"
+            else:
+
+                # Sample z from a TRIANGULAR UNIFORM distribution
+                self.culture[ii,:] = np.array([triangle_uniform()])
 
     def add_performance(self,loc=-1):
         """Adds performance matrix for either one (loc) or all (-1) nodes
@@ -225,11 +238,9 @@ class Organization(object):
         for ii in node_range:
 
             # Draw a performance distribution mean for each employee
-            self.perf_params[ii,self.index_mean] = rng.beta( \
-                       beta_a(self.pops[self.from_pop[ii]].perf_mean,
-                              self.pops[self.from_pop[ii]].perf_var),
-                       beta_b(self.pops[self.from_pop[ii]].perf_mean,
-                              self.pops[self.from_pop[ii]].perf_var))
+            beta_a, beta_b = beta(self.pops[self.from_pop[ii]].perf_mean,
+                              self.pops[self.from_pop[ii]].perf_var)
+            self.perf_params[ii,self.index_mean] = rng.beta(beta_a, beta_b)
 
             # Set performance dispersion for each employee
             self.perf_params[ii,self.index_disp] = \
@@ -294,11 +305,9 @@ class Organization(object):
             else:  # Otherwise defaults to beta distribution
 
                 # Else sample perf_indiv from a BETA distribution
-                self.perf_indiv[ii] = rng.beta( \
-                   beta_a(self.perf_params[ii,self.index_mean],
-                          self.perf_params[ii,self.index_disp]),
-                   beta_b(self.perf_params[ii,self.index_mean],
-                          self.perf_params[ii,self.index_disp]))
+                beta_a, beta_b = beta(self.perf_params[ii,self.index_mean],
+                          self.perf_params[ii,self.index_disp])
+                self.perf_indiv[ii] = rng.beta(beta_a, beta_b)
 
     def perform_branches(self):
         """Generate performance for branches in reverse. NOTE: Currently
@@ -527,19 +536,71 @@ class History(object):
         self.promotion_fitness[step,:,:] = prom_fit.copy()
         self.promotion_score[step,:] = prom_sco.copy()
 
-def beta_a(mu,phi):
+
+def beta(mu,phi):
     """Transforms beta function parameters from average and variance form to
-    the alpha parameter"""
+    the alpha & beta parameters"""
     a = mu*phi
-    return a
-
-
-def beta_b(mu,phi):
-    """Transforms beta function parameters from average and variance form to
-    the beta parameter"""
     b = (1-mu)*phi
-    return b
+    return a, b
 
+
+def linear_uniform():
+    """Generates one uniformly distributed random value and calculates two
+    other equal values, the three of which sum to one (2x + z = 1). First
+    transforms the mu and phi into a and b parameters for the beta function."""
+    z = rng.uniform()
+    x = (1 - z)/2
+    y = x
+
+    return x, y, z
+
+
+def linear_beta(mu,phi):
+    """Generates one beta distributed random value and calculates two other
+    equal values, the three of which sum to one (2x + z = 1). First transforms
+    the mu and phi into a and b parameters for the beta function."""
+    a, b = beta(mu,phi)
+    z = rng.beta(a, b)
+    x = (1 - z)/2
+    y = x
+
+    return x, y, z
+
+
+def triangle_uniform():
+    """Generates three uniformly random values that sum to one via triangle
+    point picking (see the following website for more details on the math:
+    https://mathworld.wolfram.com/TrianglePointPicking.html), Randomly draws
+    two values x and y on [0,1] and converts any values of x and y such that
+    x + y > 1 into values such that x + y < 1."""
+    x = rng.uniform()
+    y = rng.uniform()
+    if x + y > 1:
+        x = 1 - x
+        y = 1 - y
+    z = 1 - x - y
+
+    return x, y, z
+
+
+def triangle_beta(mu1,phi1,mu2,phi2):
+    """Generates three beta distributed random values that sum to one via
+    triangle point picking (see the following website for more details on the
+    math: https://mathworld.wolfram.com/TrianglePointPicking.html), Randomly
+    draws two values x and y on [0,1] and converts any values of x and y such
+    that x + y > 1 into values such that x + y < 1."""
+    a1, b1 = beta(mu1,phi1)
+    a2, b2 = beta(mu2,phi2)
+    valid = False
+    while not(valid):
+        x = rng.beta(a1,b1)
+        y = rng.beta(a2,b2)
+        if x + y <= 1:
+            valid = True
+            z = 1 - x - y
+
+    return x, y, z
 
 
 if __name__ == '__main__':
