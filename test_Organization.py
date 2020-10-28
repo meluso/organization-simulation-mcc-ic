@@ -31,15 +31,15 @@ def add_test_pops(case=3):
 
         # Add generic org of beta culture distribution
         pops.append(og.Population(starting=0.9,
-                                  hires=0.5,
+                                  hires=0.7,
                                   aff_dist="beta_2var",
-                                  aff_sim=0.45,
-                                  aff_perf=0.45,
-                                  aff_inc=0.1))
+                                  aff_sim=0.35,
+                                  aff_perf=0.35,
+                                  aff_inc=0.3))
 
         # Add generic org of beta culture distribution
         pops.append(og.Population(starting=0.1,
-                                  hires=0.5,
+                                  hires=0.3,
                                   aff_dist="beta_2var",
                                   aff_sim=0.2,
                                   aff_perf=0.2,
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     # Specify number of steps to run simulation
     n_steps = 100
-    case = 3
+    case = 2
 
     # Start timer
     t_start = dt.datetime.now()
