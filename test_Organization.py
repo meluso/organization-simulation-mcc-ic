@@ -33,17 +33,17 @@ def add_test_pops(case=3):
         pops.append(og.Population(starting=0.9,
                                   hires=0.7,
                                   aff_dist="beta_2var",
-                                  aff_sim=0.35,
-                                  aff_perf=0.35,
-                                  aff_inc=0.3))
+                                  aff_sim=0.45,
+                                  aff_perf=0.45,
+                                  aff_inc=0.1))
 
         # Add generic org of beta culture distribution
         pops.append(og.Population(starting=0.1,
                                   hires=0.3,
                                   aff_dist="beta_2var",
-                                  aff_sim=0.2,
-                                  aff_perf=0.2,
-                                  aff_inc=0.6))
+                                  aff_sim=0.25,
+                                  aff_perf=0.25,
+                                  aff_inc=0.5))
 
     # CASE 3: Two beta-distributed populations with a 2-D variable triangle
     elif case == 3:
@@ -71,6 +71,27 @@ def add_test_pops(case=3):
                                   aff_dist="linear_3var"))
 
     return pops
+
+
+def generate_levels():
+    """Generates levels for a (4,5) clique tree."""
+    level = np.zeros((781,1))
+    level[0] = 5
+    level[1:6] = 4
+    level[6:31] = 3
+    level[31:156] = 2
+    level[156:781] = 1
+    pickle.dump(level, open("cliquetree_level.pickle","wb"))
+
+
+def mean_level(demos,levels,pop):
+    """Combines a demographic matrix describing what population each member is
+    from at each point in time with a set of levels corresponding to the rank
+    of each node position in the organization, given a population integer."""
+    is_pop = demos.__eq__(pop)
+    pop_levels = (is_pop.T * levels).T
+    pop_size = np.sum(is_pop,axis=1)
+    return np.divide(np.sum(pop_levels,axis=1),pop_size)
 
 
 if __name__ == '__main__':
@@ -101,6 +122,9 @@ if __name__ == '__main__':
     t_stop = dt.datetime.now()
     print(t_stop - t_start)
 
+    # Import levels
+    level = pickle.load(open("cliquetree_level.pickle","rb"))
+
     # Plot test results by case
     if case == 1:
 
@@ -121,11 +145,31 @@ if __name__ == '__main__':
         x_values = np.arange(n_steps)
         mcc = np.mean(history.socialization[:,:,0] + history.socialization[:,:,1],axis=1)
         inc = np.mean(history.socialization[:,:,2],axis=1)
+        prf = history.performance_branch[:,0]
+        pop1 = mean_level(history.demographics,level,0)
+        pop2 = mean_level(history.demographics,level,1)
+
+        # Create figure
+        plt.figure(figsize=(9,3))
 
         # Plot culture results
+        plt.subplot(131)
         plt.plot(x_values,mcc,label='Contest')
         plt.plot(x_values,inc,label='Inclusiveness')
         plt.legend()
+
+        # Plot performance results
+        plt.subplot(132)
+        plt.plot(x_values,prf,label='Performance')
+        plt.legend()
+
+        # Plot mean level by population rank
+        plt.subplot(133)
+        plt.plot(x_values,pop1,label='Pop1')
+        plt.plot(x_values,pop2,label='Pop2')
+        plt.legend()
+
+        # Show figure
         plt.show()
 
     elif case == 3:

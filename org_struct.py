@@ -76,6 +76,8 @@ def clique_tree(height, children):
                 parents[ii,jj] = 0
     siblings = nx.to_numpy_array(T_sibs)
 
+
+
     # Plot the graph
     print(list(nx.edges(T_clique)))
     nx.draw_spring(T_clique, with_labels=True)
