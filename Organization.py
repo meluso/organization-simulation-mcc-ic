@@ -446,7 +446,7 @@ class Population(object):
     sample either to start or as new hires."""
 
 
-    def __init__(self,starting=1,hires=1,aff_dist="beta",aff_sim=0.25,
+    def __init__(self,starting=1,hires=1,aff_dist="beta_2var",aff_sim=0.25,
                 aff_perf=0.25,aff_inc=0.5,aff_var=15,perf_dist="beta",
                 perf_mean=0.5,perf_var=15):
         """
