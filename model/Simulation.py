@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
         runnum = 0
         numruns = 1
-        output_dir = 'data/'
+        output_dir = '../data/'
 
     # Create data storage directory if it doesn't already exist
 
