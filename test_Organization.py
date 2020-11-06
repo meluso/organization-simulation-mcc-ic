@@ -5,12 +5,13 @@ Created on Fri Oct  9 11:21:10 2020
 @author: John Meluso
 """
 
+import sys
 import numpy as np
 import Organization as og
+import data_manager as dm
 from numpy.random import default_rng
 import matplotlib.pyplot as plt
 import datetime as dt
-import pickle
 
 # Create the random number generator
 rng = default_rng()
@@ -22,9 +23,7 @@ def add_test_pops(case=3):
 
     # CASE 1: One uniform population with a 1-D variable spectrum
     if case == 1:
-        pops.append(og.Population(starting=1.0,
-                                  hires=1.0,
-                                  aff_dist="linear_2var"))
+        pops.append(og.Population(aff_dist="uniform_2var"))
 
     # CASE 2: Two beta-distributed populations with a 1-D variable spectrum
     elif case == 2:
@@ -68,7 +67,16 @@ def add_test_pops(case=3):
     elif case == 4:
         pops.append(og.Population(starting=1.0,
                                   hires=1.0,
-                                  aff_dist="linear_3var"))
+                                  aff_dist="uniform_3var"))
+
+    # CASE 5: One beta-distributed population with a 1-D variable spectrum
+    elif case == 5:
+
+        # Add generic org of beta culture distribution
+        pops.append(og.Population(aff_dist="beta_2var",
+                                  aff_sim=0.3,
+                                  aff_perf=0.3,
+                                  aff_inc=0.4))
 
     return pops
 
@@ -81,7 +89,7 @@ def generate_levels():
     level[6:31] = 3
     level[31:156] = 2
     level[156:781] = 1
-    pickle.dump(level, open("cliquetree_level.pickle","wb"))
+    return level
 
 
 def mean_level(demos,levels,pop):
@@ -99,6 +107,7 @@ if __name__ == '__main__':
     # Specify number of steps to run simulation
     n_steps = 100
     case = 2
+    plots = False
 
     # Start timer
     t_start = dt.datetime.now()
@@ -123,84 +132,128 @@ if __name__ == '__main__':
     print(t_stop - t_start)
 
     # Import levels
-    level = pickle.load(open("cliquetree_level.pickle","rb"))
+    level = generate_levels()
+
+    # Save test results
+    if sys.platform.startswith('linux'):
+        save_dir = '/users/j/m/jmeluso/scratch/culture_sim/data/'
+    else:
+        save_dir = 'data/'
+    dm.save_mcc(history, save_dir + 'test_results.npy')
 
     # Plot test results by case
-    if case == 1:
+    if plots:
+        if case == 1:
 
-        # Grab values for culture plot
-        x_values = np.arange(n_steps)
-        mcc = np.mean(history.socialization[:,:,0] + history.socialization[:,:,1],axis=1)
-        inc = np.mean(history.socialization[:,:,2],axis=1)
+            # Grab values for culture plot
+            x_values = np.arange(n_steps)
+            mcc = np.mean(history.socialization[:,:,0] \
+                          + history.socialization[:,:,1],axis=1)
+            inc = np.mean(history.socialization[:,:,2],axis=1)
 
-        # Plot culture results
-        plt.plot(x_values,mcc,label='Contest')
-        plt.plot(x_values,inc,label='Inclusiveness')
-        plt.legend()
-        plt.show()
+            # Plot culture results
+            plt.plot(x_values,mcc,label='Contest')
+            plt.plot(x_values,inc,label='Inclusiveness')
+            plt.ylim(0, 1)
+            plt.legend()
+            plt.show()
 
-    elif case == 2:
+        elif case == 2:
 
-        # Grab values for culture plot
-        x_values = np.arange(n_steps)
-        mcc = np.mean(history.socialization[:,:,0] + history.socialization[:,:,1],axis=1)
-        inc = np.mean(history.socialization[:,:,2],axis=1)
-        prf = history.performance_branch[:,0]
-        pop1 = mean_level(history.demographics,level,0)
-        pop2 = mean_level(history.demographics,level,1)
+            # Grab values for culture plot
+            x_values = np.arange(n_steps)
+            mcc = np.mean(history.socialization[:,:,0] \
+                          + history.socialization[:,:,1],axis=1)
+            inc = np.mean(history.socialization[:,:,2],axis=1)
+            prf = history.performance_org
+            pop1 = mean_level(history.demographics,level,0)
+            pop2 = mean_level(history.demographics,level,1)
 
-        # Create figure
-        plt.figure(figsize=(9,3))
+            # Create figure
+            plt.figure(figsize=(9,3))
 
-        # Plot culture results
-        plt.subplot(131)
-        plt.plot(x_values,mcc,label='Contest')
-        plt.plot(x_values,inc,label='Inclusiveness')
-        plt.legend()
+            # Plot culture results
+            plt.subplot(131)
+            plt.plot(x_values,mcc,label='Contest')
+            plt.plot(x_values,inc,label='Inclusiveness')
+            plt.ylim(0, 1)
+            plt.legend()
 
-        # Plot performance results
-        plt.subplot(132)
-        plt.plot(x_values,prf,label='Performance')
-        plt.legend()
+            # Plot performance results
+            plt.subplot(132)
+            plt.plot(x_values,prf,label='Performance')
+            plt.ylim(0, 1)
+            plt.legend()
 
-        # Plot mean level by population rank
-        plt.subplot(133)
-        plt.plot(x_values,pop1,label='Pop1')
-        plt.plot(x_values,pop2,label='Pop2')
-        plt.legend()
+            # Plot mean level by population rank
+            plt.subplot(133)
+            plt.plot(x_values,pop1,label='Pop1')
+            plt.plot(x_values,pop2,label='Pop2')
+            plt.legend()
 
-        # Show figure
-        plt.show()
+            # Show figure
+            plt.show()
 
-    elif case == 3:
+        elif case == 3:
 
-        # Grab values for culture plot
-        x_values = np.arange(n_steps)
-        sim = np.mean(history.socialization[:,:,0],axis=1)
-        perf = np.mean(history.socialization[:,:,1],axis=1)
-        inc = np.mean(history.socialization[:,:,2],axis=1)
+            # Grab values for culture plot
+            x_values = np.arange(n_steps)
+            sim = np.mean(history.socialization[:,:,0],axis=1)
+            perf = np.mean(history.socialization[:,:,1],axis=1)
+            inc = np.mean(history.socialization[:,:,2],axis=1)
 
-        # Plot culture results
-        plt.plot(x_values,sim,label='Similarity')
-        plt.plot(x_values,perf,label='Performance')
-        plt.plot(x_values,inc,label='Inclusiveness')
-        plt.legend()
-        plt.show()
+            # Plot culture results
+            plt.plot(x_values,sim,label='Similarity')
+            plt.plot(x_values,perf,label='Performance')
+            plt.plot(x_values,inc,label='Inclusiveness')
+            plt.ylim(0, 1)
+            plt.legend()
+            plt.show()
 
-    elif case == 4:
+        elif case == 4:
 
-        # Grab values for culture plot
-        x_values = np.arange(n_steps)
-        sim = np.mean(history.socialization[:,:,0],axis=1)
-        perf = np.mean(history.socialization[:,:,1],axis=1)
-        inc = np.mean(history.socialization[:,:,2],axis=1)
+            # Grab values for culture plot
+            x_values = np.arange(n_steps)
+            sim = np.mean(history.socialization[:,:,0],axis=1)
+            perf = np.mean(history.socialization[:,:,1],axis=1)
+            inc = np.mean(history.socialization[:,:,2],axis=1)
 
-        # Plot culture results
-        plt.plot(x_values,sim,label='Similarity')
-        plt.plot(x_values,perf,label='Performance')
-        plt.plot(x_values,inc,label='Inclusiveness')
-        plt.legend()
-        plt.show()
+            # Plot culture results
+            plt.plot(x_values,sim,label='Similarity')
+            plt.plot(x_values,perf,label='Performance')
+            plt.plot(x_values,inc,label='Inclusiveness')
+            plt.ylim(0, 1)
+            plt.legend()
+            plt.show()
 
-    else:
-        print("Not a valid case.")
+        elif case == 5:
+
+            # Grab values for culture plot
+            x_values = np.arange(n_steps)
+            mcc = np.mean(history.socialization[:,:,0] \
+                          + history.socialization[:,:,1],axis=1)
+            inc = np.mean(history.socialization[:,:,2],axis=1)
+            prf = 2*history.performance_branch[:,0] \
+                - history.performance_indiv[:,0]
+
+            # Create figure
+            plt.figure(figsize=(6,3))
+
+            # Plot culture results
+            plt.subplot(121)
+            plt.plot(x_values,mcc,label='Contest')
+            plt.plot(x_values,inc,label='Inclusiveness')
+            plt.ylim(0, 1)
+            plt.legend()
+
+            # Plot performance results
+            plt.subplot(122)
+            plt.plot(x_values,prf,label='Performance')
+            plt.ylim(0, 1)
+            plt.legend()
+
+            # Show figure
+            plt.show()
+
+        else:
+            print("Not a valid case.")

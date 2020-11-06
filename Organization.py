@@ -190,8 +190,8 @@ class Organization(object):
         # Generate culture values by first cycling through the nodes
         for ii in node_range:
 
-            # CASE 1: linear_2var
-            if self.pops[self.from_pop[ii]].aff_dist == "linear_2var":
+            # CASE 1: uniform_2var
+            if self.pops[self.from_pop[ii]].aff_dist == "uniform_2var":
 
                 # Sample z from a LINEAR UNIFORM distribution
                 self.culture[ii,:] = np.array([linear_uniform()])
@@ -218,7 +218,7 @@ class Organization(object):
                     self.pops[self.from_pop[ii]].aff_var,
                     )])
 
-            # CASE 4: "linear_3var"
+            # CASE 4: "uniform_3var"
             else:
 
                 # Sample z from a TRIANGULAR UNIFORM distribution
@@ -273,7 +273,8 @@ class Organization(object):
             # Record History from turn (promotion/hiring reflect in next step)
             self.history.record_history(st, self.from_pop, self.culture,
                 self.social, self.perf_params, self.perf_indiv,
-                self.perf_branch, self.prom_fit, self.prom_score)
+                self.perf_branch, self.perf_org, self.prom_fit,
+                self.prom_score)
 
             # Perform retirement
             self.gen_retire()
@@ -322,6 +323,10 @@ class Organization(object):
                 * np.matmul(self.A_kids[ii,:],self.perf_branch)
             self.perf_branch[ii] = self.norm_branch[ii,ii] \
                 * (self.perf_indiv[ii] + term_kids)
+
+        # Calculate org performance by taking root node's branch performance.
+        # Value comes from term_kids because loops above is reversed.
+        self.perf_org = term_kids
 
     def calc_promotion_fitness(self):
         """Calculates the promotion fitness for each node. NOTE: Currently
@@ -522,17 +527,19 @@ class History(object):
         self.performance_params = np.zeros((n_steps,n_nodes,n_perfatt))
         self.performance_indiv = np.zeros((n_steps,n_nodes))
         self.performance_branch = np.zeros((n_steps,n_nodes))
+        self.performance_org = np.zeros((n_steps,))
         self.promotion_fitness = np.zeros((n_steps,n_nodes,n_cultatt))
         self.promotion_score = np.zeros((n_steps,n_nodes))
 
     def record_history(self,step,demo,cult,soc,perf_par,perf_ind,perf_bra,
-                       prom_fit,prom_sco):
+                       perf_org,prom_fit,prom_sco):
         self.demographics[step,:] = demo.copy()
         self.culture[step,:,:] = cult.copy()
         self.socialization[step,:,:] = soc.copy()
         self.performance_params[step,:,:] = perf_par.copy()
         self.performance_indiv[step,:] = perf_ind.copy()
         self.performance_branch[step,:] = perf_bra.copy()
+        self.performance_org[step] = perf_org.copy()
         self.promotion_fitness[step,:,:] = prom_fit.copy()
         self.promotion_score[step,:] = prom_sco.copy()
 
