@@ -81,17 +81,6 @@ def add_test_pops(case=3):
     return pops
 
 
-def generate_levels():
-    """Generates levels for a (4,5) clique tree."""
-    level = np.zeros((781,1))
-    level[0] = 5
-    level[1:6] = 4
-    level[6:31] = 3
-    level[31:156] = 2
-    level[156:781] = 1
-    return level
-
-
 def mean_level(demos,levels,pop):
     """Combines a demographic matrix describing what population each member is
     from at each point in time with a set of levels corresponding to the rank
@@ -132,7 +121,7 @@ if __name__ == '__main__':
     print(t_stop - t_start)
 
     # Import levels
-    level = generate_levels()
+    level = dm.generate_levels()
 
     # Save test results
     if sys.platform.startswith('linux'):

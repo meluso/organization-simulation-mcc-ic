@@ -5,11 +5,15 @@ Created on Fri Oct 30 11:07:49 2020
 @author: John Meluso
 """
 
-import sys, os
+import sys
 import numpy as np
 import datetime as dt
 import Organization as og
 import data_manager as dm
+from numpy.random import default_rng
+
+# Create the random number generator
+rng = default_rng()
 
 
 class Simulation(object):
@@ -149,7 +153,8 @@ class Simulation(object):
         return pops
 
 
-if __name__ == '__main__':
+def run_Simulation(test_mode=False):
+    """Runs the simulation."""
 
     # Get start time
     t_start = dt.datetime.now()
@@ -161,7 +166,7 @@ if __name__ == '__main__':
         # submit_job.sh. If there are n jobs to be run total (numruns = n), then
         # runnum should run from 0 to n-1. In notation: [0,n) or [0,n-1].
         try:
-            runnum, numruns = map(int, sys.argv[1:])
+            runnum = map(int, sys.argv[1])
         except IndexError:
             sys.exit("Usage: %s runnum numruns" % sys.argv[0] )
         output_dir = '/gpfs2/scratch/jmeluso/culture_sim/data/'
@@ -169,16 +174,15 @@ if __name__ == '__main__':
     else:
 
         runnum = 0
-        numruns = 1
         output_dir = '../data/'
-
-    # Create data storage directory if it doesn't already exist
-
 
     # Main execution code for one instance of the MCC simulation
     n_steps = 100
     sim = Simulation(n_steps)
-    for case in np.arange(len(sim.cases)):
+    if test_mode == True:
+
+        # Select random case for testing
+        case = rng.integers(len(sim.cases))
 
         # Run simulation for specified set of parameters
         results = sim.run_Organization(case)
@@ -186,13 +190,38 @@ if __name__ == '__main__':
         # Build name for specific test
         case = f'case{case:04}'
         job = f'run{runnum:04}'
-        time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
         fileext = '.npy'
         filename = output_dir + case + '_' + job + fileext
 
         # Save results to location specified by platform
         dm.save_mcc(results,filename)
 
-    # Print end time
-    t_stop = dt.datetime.now()
-    print(t_stop - t_start)
+        # Print end time
+        t_stop = dt.datetime.now()
+        print(t_stop - t_start)
+
+
+    else:
+
+        # Loop through all cases
+        for case in np.arange(len(sim.cases)):
+
+            # Run simulation for specified set of parameters
+            results = sim.run_Organization(case)
+
+            # Build name for specific test
+            case = f'case{case:04}'
+            job = f'run{runnum:04}'
+            fileext = '.npy'
+            filename = output_dir + case + '_' + job + fileext
+
+            # Save results to location specified by platform
+            dm.save_mcc(results,filename)
+
+        # Print end time
+        t_stop = dt.datetime.now()
+        print(t_stop - t_start)
+
+
+if __name__ == '__main__':
+    run_Simulation()
