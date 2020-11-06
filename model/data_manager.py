@@ -42,3 +42,13 @@ def load_trials():
     """Loads the trial parameter list."""
     return pickle.load(open('trials.pickle','rb'))
 
+
+def generate_levels():
+    """Generates levels for a (4,5) clique tree."""
+    level = np.zeros((781,1))
+    level[0] = 5
+    level[1:6] = 4
+    level[6:31] = 3
+    level[31:156] = 2
+    level[156:781] = 1
+    return level
