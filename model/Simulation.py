@@ -166,11 +166,10 @@ def run_Simulation(test_mode=False):
         # submit_job.sh. If there are n jobs to be run total (numruns = n), then
         # runnum should run from 0 to n-1. In notation: [0,n) or [0,n-1].
         try:
-            runnum = map(int, sys.argv[1])
+            runnum = int(sys.argv[1])
+            output_dir = str(sys.argv[2])
         except IndexError:
             sys.exit("Usage: %s runnum numruns" % sys.argv[0] )
-        output_dir = '/gpfs2/scratch/jmeluso/culture_sim/data/'
-
     else:
 
         runnum = 0
@@ -191,7 +190,7 @@ def run_Simulation(test_mode=False):
         case = f'case{case:04}'
         job = f'run{runnum:04}'
         fileext = '.npy'
-        filename = output_dir + case + '_' + job + fileext
+        filename = output_dir + '/' + case + '_' + job + fileext
 
         # Save results to location specified by platform
         dm.save_mcc(results,filename)
@@ -213,7 +212,7 @@ def run_Simulation(test_mode=False):
             case = f'case{case:04}'
             job = f'run{runnum:04}'
             fileext = '.npy'
-            filename = output_dir + case + '_' + job + fileext
+            filename = output_dir + '/' + case + '_' + job + fileext
 
             # Save results to location specified by platform
             dm.save_mcc(results,filename)
@@ -224,4 +223,4 @@ def run_Simulation(test_mode=False):
 
 
 if __name__ == '__main__':
-    run_Simulation()
+    run_Simulation(True)
