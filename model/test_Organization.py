@@ -138,7 +138,7 @@ if __name__ == '__main__':
     if sys.platform.startswith('linux'):
         save_dir = '/users/j/m/jmeluso/scratch/culture_sim/data/'
     else:
-        save_dir = 'data/'
+        save_dir = '../data/'
     dm.save_mcc(history, save_dir + 'test_results.npy')
 
     # Plot test results by case
