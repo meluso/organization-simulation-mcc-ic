@@ -60,15 +60,15 @@ class Simulation(object):
         """Create 2 population beta cases"""
         n_pops = 2
         pop_mode = "beta_2var"
-        pop_start = np.linspace(0.5,1.0,5,endpoint=False)
-        pop1_hire_limit = 1.0  # for arange in loop
+        pop_hire = np.linspace(0.5,1.0,5,endpoint=False)
+        pop1_start_limit = 1.0  # for arange in loop
         pop1_culture = np.linspace(0.5,1.0,5,endpoint=False)
         pop2_culture = np.linspace(0.1,1.0,9,endpoint=False)
 
         # Loop through all starting fractions and hiring fractions
-        for ss in pop_start:
-            pop2_steps = int(np.round((pop1_hire_limit - ss)/0.1))
-            for hh in np.linspace(ss,pop1_hire_limit,pop2_steps,
+        for hh in pop_hire:
+            pop1_steps = int(np.round((pop1_start_limit - hh)/0.1))
+            for ss in np.linspace(hh,pop1_start_limit,pop1_steps,
                                   endpoint=False):
 
                 # Loop through full rectangle of population 1 and 2 cultures

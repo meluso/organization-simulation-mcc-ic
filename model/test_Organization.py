@@ -96,7 +96,7 @@ if __name__ == '__main__':
     # Specify number of steps to run simulation
     n_steps = 100
     case = 2
-    plots = False
+    plots = True
 
     # Start timer
     t_start = dt.datetime.now()
