@@ -5,10 +5,8 @@ Created on Thu Nov  5 10:07:45 2020
 @author: John Meluso
 """
 
-import Organization as og
-import numpy as np
-import pickle
 import os,sys
+import numpy as np
 import datetime as dt
 
 
@@ -38,6 +36,61 @@ def load_mcc(file_name):
         dem = np.load(file)
 
     return mcc, inc, prf, dem
+
+
+def mcc_cases():
+    """Create one instance of each combination of the MCC simulation run
+    parameters. Case Structure appears as follows:
+        [n_pops,pop_mode,pop1_culture,pop2_culture,pop_start,pop_hire]
+    """
+
+    cases = []
+
+    """Create 1 population uniform cases"""
+    n_pops = 1
+    pop_mode = "uniform_2var"
+    new_case = [n_pops,pop_mode]
+    cases.append(new_case)
+
+    """Create 1 population beta cases"""
+    n_pops = 1
+    pop_mode = "beta_2var"
+    pop1_culture = np.round(np.linspace(0.1,1.0,9,endpoint=False),1)
+    for cc in pop1_culture:
+        new_case = [n_pops,pop_mode,cc]
+        cases.append(new_case)
+
+    """Create 2 population beta cases"""
+    n_pops = 2
+    pop_mode = "beta_2var"
+    pop_hire = np.round(np.linspace(0.5,1.0,5,endpoint=False),1)
+    pop1_start_limit = 1.0  # for arange in loop
+    pop1_culture = np.round(np.linspace(0.5,1.0,5,endpoint=False),1)
+    pop2_culture = np.round(np.linspace(0.1,1.0,9,endpoint=False),1)
+
+    # Loop through all starting fractions and hiring fractions
+    for hh in pop_hire:
+        pop1_steps = int(np.round((pop1_start_limit - hh)/0.1))
+        for ss in np.round(np.linspace(hh,pop1_start_limit,pop1_steps,
+                              endpoint=False),1):
+
+            # Loop through full rectangle of population 1 and 2 cultures
+            for cc in pop1_culture:
+                for dd in pop2_culture:
+                    if not(abs(cc - dd) < 1E-4):
+
+                        # Construct cases
+                        new_case = [n_pops,pop_mode,cc,dd,ss,hh]
+                        cases.append(new_case)
+
+            # Loop through special cases for populations 1 and 2 cultures
+            # w/ 0.3,0.5 and 0.3,0.7 for pop1_culture,pop2_culture resp.
+            new_case = [n_pops,pop_mode,0.3,0.5,ss,hh]
+            cases.append(new_case)
+            new_case = [n_pops,pop_mode,0.3,0.7,ss,hh]
+            cases.append(new_case)
+
+    return cases
 
 
 def generate_levels():
@@ -79,6 +132,12 @@ def frac_level(demos,levels,pop):
     return level_frac
 
 
+def culture_level(levels,culture):
+    """Returns the average culture for each level at each point in time."""
+    unique_levels, per_level = np.unique(levels, return_counts=True)
+    is_level = levels.__eq__(unique_levels)
+    return np.divide(np.matmul(culture,is_level),per_level)
+
 
 def combine_mcc(directory,n_cases,n_runs,test=True):
     """Imports data from a specified directory string and combines them for
@@ -98,7 +157,7 @@ def combine_mcc(directory,n_cases,n_runs,test=True):
     inc_all = np.zeros((n_cases,n_steps))
     prf_all = np.zeros((n_cases,n_steps))
     dem_all = np.zeros((n_cases,n_steps,n_pops))
-    lvl_all = np.zeros((n_cases,n_pops,n_steps,n_levels))
+    lvl_all = np.zeros((n_cases,n_steps,n_pops,n_levels))
 
     # Iteratively open each file if it exists and import contents
     for ii in np.arange(n_cases):
@@ -110,13 +169,13 @@ def combine_mcc(directory,n_cases,n_runs,test=True):
                 inc_all[ii,:] += inc
                 prf_all[ii,:] += prf
                 dem_all[ii,:,0] += mean_level(dem,levels,0)
-                lvl_all[ii,0,:,:] += frac_level(dem,levels,0)
+                lvl_all[ii,:,0,:] += frac_level(dem,levels,0)
                 if ii > 9:
                     dem_all[ii,:,1] += mean_level(dem,levels,1)
-                    lvl_all[ii,1,:,:] += frac_level(dem,levels,1)
+                    lvl_all[ii,:,1,:] += frac_level(dem,levels,1)
                 else:
                     dem_all[ii,:,1] = dem_all[ii,:,0]
-                    lvl_all[ii,1,:,:] = lvl_all[ii,0,:,:]
+                    lvl_all[ii,:,1,:] = lvl_all[ii,0,:,:]
 
     # Average results
     if test: n_runs = 4
@@ -167,6 +226,7 @@ if __name__ == '__main__':
         loc = '../data/' + name + '/'
         combine_mcc(loc,640,100)
         mcc, inc, prf, dem, lvl = load_results(loc + 'test_results.npy')
+        subset = lvl[639,1,:,:]
 
 
 
