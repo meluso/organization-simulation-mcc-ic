@@ -8,8 +8,8 @@ Created on Fri Oct 30 11:07:49 2020
 import sys
 import numpy as np
 import datetime as dt
-import Organization as og
-import data_manager as dm
+import model.Organization as og
+import model.data_manager as dm
 from numpy.random import default_rng
 
 # Create the random number generator
@@ -26,66 +26,14 @@ class Simulation(object):
         self.index_pops = 0
         self.index_mode = 1
         self.index_p1_culture = 2
-        self.index_p1_start = 3
-        self.index_p1_hire = 4
-        self.index_p2_culture = 5
+        self.index_p2_culture = 3
+        self.index_p1_start = 4
+        self.index_p1_hire = 5
 
         # Create cases
-        self.cases = []
-        self.create_sim_params()
+        self.cases = dm.mcc_cases()
         self.n_steps = n_steps
 
-    def create_sim_params(self):
-        """Create one instance of each combination of the MCC simulation run
-        parameters. Case Structure appears as follows:
-
-            [n_pops,pop_mode,pop1_culture,pop2_culture,pop_start,pop_hire]
-
-        """
-
-        """Create 1 population uniform cases"""
-        n_pops = 1
-        pop_mode = "uniform_2var"
-        new_case = [n_pops,pop_mode]
-        self.cases.append(new_case)
-
-        """Create 1 population beta cases"""
-        n_pops = 1
-        pop_mode = "beta_2var"
-        pop1_culture = np.linspace(0.1,1.0,9,endpoint=False)
-        for cc in pop1_culture:
-            new_case = [n_pops,pop_mode,cc]
-            self.cases.append(new_case)
-
-        """Create 2 population beta cases"""
-        n_pops = 2
-        pop_mode = "beta_2var"
-        pop_start = np.linspace(0.5,1.0,5,endpoint=False)
-        pop1_hire_limit = 1.0  # for arange in loop
-        pop1_culture = np.linspace(0.5,1.0,5,endpoint=False)
-        pop2_culture = np.linspace(0.1,1.0,9,endpoint=False)
-
-        # Loop through all starting fractions and hiring fractions
-        for ss in pop_start:
-            pop2_steps = int(np.round((pop1_hire_limit - ss)/0.1))
-            for hh in np.linspace(ss,pop1_hire_limit,pop2_steps,
-                                  endpoint=False):
-
-                # Loop through full rectangle of population 1 and 2 cultures
-                for cc in pop1_culture:
-                    for dd in pop2_culture:
-                        if not(abs(cc - dd) < 1E-4):
-
-                            # Construct cases
-                            new_case = [n_pops,pop_mode,cc,dd,ss,hh]
-                            self.cases.append(new_case)
-
-                # Loop through special cases for populations 1 and 2 cultures
-                # w/ 0.3,0.5 and 0.3,0.7 for pop1_culture,pop2_culture resp.
-                new_case = [n_pops,pop_mode,0.3,0.5,ss,hh]
-                self.cases.append(new_case)
-                new_case = [n_pops,pop_mode,0.3,0.7,ss,hh]
-                self.cases.append(new_case)
 
     def run_Organization(self,tt):
         """Creates and runs an organization for a specified number of populations
@@ -173,7 +121,7 @@ def run_Simulation(test_mode=False):
     else:
 
         runnum = 0
-        output_dir = '../data/'
+        output_dir = '../data/culture_sim_test'
 
     # Main execution code for one instance of the MCC simulation
     n_steps = 100
@@ -198,7 +146,7 @@ def run_Simulation(test_mode=False):
         # Print end time
         t_stop = dt.datetime.now()
         print(t_stop - t_start)
-
+        print(filename)
 
     else:
 

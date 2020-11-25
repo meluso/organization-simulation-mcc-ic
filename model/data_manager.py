@@ -5,19 +5,19 @@ Created on Thu Nov  5 10:07:45 2020
 @author: John Meluso
 """
 
-import Organization as og
+import os,sys
 import numpy as np
-import pickle
+import datetime as dt
 
 
-def save_mcc(results,file_name):
-    """Saves results data from test for the MCC simulation trials."""
+def save_mcc(data,file_name):
+    """Saves data from test for the MCC simulation trials."""
 
-    mcc = np.mean(results.socialization[:,:,0] \
-                  + results.socialization[:,:,1],axis=1)
-    inc = np.mean(results.socialization[:,:,2],axis=1)
-    prf = results.performance_org
-    dem = results.demographics
+    mcc = np.mean(data.socialization[:,:,0] \
+                  + data.socialization[:,:,1],axis=1)
+    inc = np.mean(data.socialization[:,:,2],axis=1)
+    prf = data.performance_org
+    dem = data.demographics
 
     with open(file_name,'wb') as file:
         np.save(file,mcc)
@@ -27,7 +27,7 @@ def save_mcc(results,file_name):
 
 
 def load_mcc(file_name):
-    """Loads results from a saved MCC numpy trial file."""
+    """Loads data from a saved MCC numpy trial file."""
 
     with open(file_name, 'rb') as file:
         mcc = np.load(file)
@@ -38,17 +38,196 @@ def load_mcc(file_name):
     return mcc, inc, prf, dem
 
 
-def load_trials():
-    """Loads the trial parameter list."""
-    return pickle.load(open('trials.pickle','rb'))
+def mcc_cases():
+    """Create one instance of each combination of the MCC simulation run
+    parameters. Case Structure appears as follows:
+        [n_pops,pop_mode,pop1_culture,pop2_culture,pop_start,pop_hire]
+    """
+
+    cases = []
+
+    """Create 1 population uniform cases"""
+    n_pops = 1
+    pop_mode = "uniform_2var"
+    new_case = [n_pops,pop_mode]
+    cases.append(new_case)
+
+    """Create 1 population beta cases"""
+    n_pops = 1
+    pop_mode = "beta_2var"
+    pop1_culture = np.round(np.linspace(0.1,1.0,9,endpoint=False),1)
+    for cc in pop1_culture:
+        new_case = [n_pops,pop_mode,cc]
+        cases.append(new_case)
+
+    """Create 2 population beta cases"""
+    n_pops = 2
+    pop_mode = "beta_2var"
+    pop_hire = np.round(np.linspace(0.5,1.0,5,endpoint=False),1)
+    pop1_start_limit = 1.0  # for arange in loop
+    pop1_culture = np.round(np.linspace(0.5,1.0,5,endpoint=False),1)
+    pop2_culture = np.round(np.linspace(0.1,1.0,9,endpoint=False),1)
+
+    # Loop through all starting fractions and hiring fractions
+    for hh in pop_hire:
+        pop1_steps = int(np.round((pop1_start_limit - hh)/0.1))
+        for ss in np.round(np.linspace(hh,pop1_start_limit,pop1_steps,
+                              endpoint=False),1):
+
+            # Loop through full rectangle of population 1 and 2 cultures
+            for cc in pop1_culture:
+                for dd in pop2_culture:
+                    if not(abs(cc - dd) < 1E-4):
+
+                        # Construct cases
+                        new_case = [n_pops,pop_mode,cc,dd,ss,hh]
+                        cases.append(new_case)
+
+            # Loop through special cases for populations 1 and 2 cultures
+            # w/ 0.3,0.5 and 0.3,0.7 for pop1_culture,pop2_culture resp.
+            new_case = [n_pops,pop_mode,0.3,0.5,ss,hh]
+            cases.append(new_case)
+            new_case = [n_pops,pop_mode,0.3,0.7,ss,hh]
+            cases.append(new_case)
+
+    return cases
 
 
 def generate_levels():
     """Generates levels for a (4,5) clique tree."""
-    level = np.zeros((781,1))
-    level[0] = 5
-    level[1:6] = 4
-    level[6:31] = 3
-    level[31:156] = 2
-    level[156:781] = 1
-    return level
+    levels = np.zeros((781,1))
+    levels[0] = 5
+    levels[1:6] = 4
+    levels[6:31] = 3
+    levels[31:156] = 2
+    levels[156:781] = 1
+    return levels
+
+
+def mean_level(demos,levels,pop):
+    """Combines a demographic matrix describing what population each member is
+    from at each point in time with a set of levels corresponding to the rank
+    of each node position in the organization, given a population integer.
+    Returns the mean rank for members of each population in the org."""
+    is_pop = demos.__eq__(pop)
+    pop_levels = (is_pop.T * levels).T
+    pop_size = np.sum(is_pop,axis=1)
+    return np.divide(np.sum(pop_levels,axis=1),pop_size)
+
+
+def frac_level(demos,levels,pop):
+    """Combines a demographic matrix describing what population each member is
+    from at each point in time with a set of levels corresponding to the rank
+    of each node position in the organization, given a population integer.
+    For each level in the organization, returns the fraction of members who
+    are from each population across all runs."""
+    is_pop = demos.__eq__(pop)
+    pop_levels = (is_pop.T * levels).T
+    unique = np.unique(levels)
+    size = demos.shape
+    level_frac = np.zeros((size[0],len(unique)))
+    for uu in np.arange(len(unique)):
+        level_frac[:,uu] = np.count_nonzero(pop_levels == unique[uu], axis=1) \
+            / np.count_nonzero(levels == unique[uu])
+    return level_frac
+
+
+def culture_level(levels,culture):
+    """Returns the average culture for each level at each point in time."""
+    unique_levels, per_level = np.unique(levels, return_counts=True)
+    is_level = levels.__eq__(unique_levels)
+    return np.divide(np.matmul(culture,is_level),per_level)
+
+
+def combine_mcc(directory,n_cases,n_runs,test=True):
+    """Imports data from a specified directory string and combines them for
+    analysis and plotting."""
+
+    # Start timer
+    t_start = dt.datetime.now()
+
+    # Preset parameters for MCC simulation
+    n_steps = 100
+    n_pops = 2
+    n_levels = 5
+    levels = generate_levels()
+
+    # Create structures for combining data
+    mcc_all = np.zeros((n_cases,n_steps))
+    inc_all = np.zeros((n_cases,n_steps))
+    prf_all = np.zeros((n_cases,n_steps))
+    dem_all = np.zeros((n_cases,n_steps,n_pops))
+    lvl_all = np.zeros((n_cases,n_steps,n_pops,n_levels))
+
+    # Iteratively open each file if it exists and import contents
+    for ii in np.arange(n_cases):
+        for jj in np.arange(n_runs):
+            file = directory + f'case{ii:04}_run{jj:04}.npy'
+            if os.path.exists(file):
+                mcc, inc, prf, dem = load_mcc(file)
+                mcc_all[ii,:] += mcc
+                inc_all[ii,:] += inc
+                prf_all[ii,:] += prf
+                dem_all[ii,:,0] += mean_level(dem,levels,0)
+                lvl_all[ii,:,0,:] += frac_level(dem,levels,0)
+                if ii > 9:
+                    dem_all[ii,:,1] += mean_level(dem,levels,1)
+                    lvl_all[ii,:,1,:] += frac_level(dem,levels,1)
+                else:
+                    dem_all[ii,:,1] = dem_all[ii,:,0]
+                    lvl_all[ii,:,1,:] = lvl_all[ii,0,:,:]
+
+    # Average results
+    if test: n_runs = 4
+    mcc_mean = mcc_all/n_runs
+    inc_mean = inc_all/n_runs
+    prf_mean = prf_all/n_runs
+    dem_mean = dem_all/n_runs
+    lvl_mean = lvl_all/n_runs
+
+    # Save results
+    if test:
+        loc = directory + 'test_results.npy'
+    else:
+        loc = directory + 'results.npy'
+    with open(loc,'wb') as file:
+        np.save(file,mcc_mean)
+        np.save(file,inc_mean)
+        np.save(file,prf_mean)
+        np.save(file,dem_mean)
+        np.save(file,lvl_mean)
+
+    # Stop timer & print time
+    t_stop = dt.datetime.now()
+    print(t_stop - t_start)
+
+
+def load_results(file_name):
+    """Loads results from a saved MCC numpy results file."""
+
+    with open(file_name, 'rb') as file:
+        mcc = np.load(file)
+        inc = np.load(file)
+        prf = np.load(file)
+        dem = np.load(file)
+        lvl = np.load(file)
+
+    return mcc, inc, prf, dem, lvl
+
+
+if __name__ == '__main__':
+
+    name = 'culture_sim_exec001'
+
+    if sys.platform.startswith('linux'):
+        loc = '/gpfs1/home/j/m/jmeluso/culture_sim/data/' + name + '/'
+        combine_mcc(loc,640,100,False)
+    else:
+        loc = '../data/' + name + '/'
+        combine_mcc(loc,640,100)
+        mcc, inc, prf, dem, lvl = load_results(loc + 'test_results.npy')
+        subset = lvl[639,1,:,:]
+
+
+
+

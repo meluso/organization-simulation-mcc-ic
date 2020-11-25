@@ -7,30 +7,30 @@ Created on Fri Oct  9 11:21:10 2020
 
 import sys
 import numpy as np
-import Organization as og
-import data_manager as dm
-from numpy.random import default_rng
+import model.Organization as og
+import model.data_manager as dm
 import matplotlib.pyplot as plt
 import datetime as dt
+from numpy.random import default_rng
 
 # Create the random number generator
 rng = default_rng()
 
-def add_test_pops(case=3):
+def add_test_pops(option=3):
     """Adds test populations"""
 
     pops = []  # Create empty population array
 
-    # CASE 1: One uniform population with a 1-D variable spectrum
-    if case == 1:
+    # OPTION 1: One uniform population with a 1-D variable spectrum
+    if option == 1:
         pops.append(og.Population(aff_dist="uniform_2var"))
 
-    # CASE 2: Two beta-distributed populations with a 1-D variable spectrum
-    elif case == 2:
+    # OPTION 2: Two beta-distributed populations with a 1-D variable spectrum
+    elif option == 2:
 
         # Add generic org of beta culture distribution
         pops.append(og.Population(starting=0.9,
-                                  hires=0.7,
+                                  hires=0.8,
                                   aff_dist="beta_2var",
                                   aff_sim=0.45,
                                   aff_perf=0.45,
@@ -38,45 +38,54 @@ def add_test_pops(case=3):
 
         # Add generic org of beta culture distribution
         pops.append(og.Population(starting=0.1,
-                                  hires=0.3,
+                                  hires=0.2,
                                   aff_dist="beta_2var",
-                                  aff_sim=0.25,
-                                  aff_perf=0.25,
-                                  aff_inc=0.5))
+                                  aff_sim=0.4,
+                                  aff_perf=0.4,
+                                  aff_inc=0.3))
 
-    # CASE 3: Two beta-distributed populations with a 2-D variable triangle
-    elif case == 3:
+    # OPTION 3: Two beta-distributed populations with a 2-D variable triangle
+    elif option == 3:
 
         # Add generic org of beta culture distribution
         pops.append(og.Population(starting=0.9,
-                                  hires=0.5,
+                                  hires=0.9,
                                   aff_dist="beta_3var",
-                                  aff_sim=0.15,
-                                  aff_perf=0.7,
-                                  aff_inc=0.15))
+                                  aff_sim=0.48,
+                                  aff_perf=0.48,
+                                  aff_inc=0.04))
 
         # Add generic org of beta culture distribution
         pops.append(og.Population(starting=0.1,
-                                  hires=0.5,
+                                  hires=0.1,
                                   aff_dist="beta_3var",
-                                  aff_sim=0.3,
+                                  aff_sim=0.2,
                                   aff_perf=0.2,
-                                  aff_inc=0.5))
+                                  aff_inc=0.6))
 
-    # CASE 4: One uniform population with a 2-D variable triangle
-    elif case == 4:
+    # OPTION 4: One uniform population with a 2-D variable triangle
+    elif option == 4:
         pops.append(og.Population(starting=1.0,
                                   hires=1.0,
                                   aff_dist="uniform_3var"))
 
-    # CASE 5: One beta-distributed population with a 1-D variable spectrum
-    elif case == 5:
+    # OPTION 5: One beta-distributed population with a 1-D variable spectrum
+    elif option == 5:
 
         # Add generic org of beta culture distribution
         pops.append(og.Population(aff_dist="beta_2var",
-                                  aff_sim=0.3,
-                                  aff_perf=0.3,
-                                  aff_inc=0.4))
+                                  aff_sim=0.45,
+                                  aff_perf=0.45,
+                                  aff_inc=0.1))
+
+    # OPTION 5: One beta-distributed population with a 2-D variable triangle
+    elif option == 6:
+
+        # Add generic org of beta culture distribution
+        pops.append(og.Population(aff_dist="beta_3var",
+                                  aff_sim=0.15,
+                                  aff_perf=0.15,
+                                  aff_inc=0.7))
 
     return pops
 
@@ -95,8 +104,8 @@ if __name__ == '__main__':
 
     # Specify number of steps to run simulation
     n_steps = 100
-    case = 2
-    plots = False
+    option = 5
+    plots = True
 
     # Start timer
     t_start = dt.datetime.now()
@@ -105,7 +114,7 @@ if __name__ == '__main__':
     org_test = og.Organization()
 
     # Add the test populations
-    pops = add_test_pops(case)
+    pops = add_test_pops(option)
 
     # Populate the organization with the culture, performance, and populations
     org_test.fill_org(pops)
@@ -121,7 +130,7 @@ if __name__ == '__main__':
     print(t_stop - t_start)
 
     # Import levels
-    level = dm.generate_levels()
+    levels = dm.generate_levels()
 
     # Save test results
     if sys.platform.startswith('linux'):
@@ -130,9 +139,9 @@ if __name__ == '__main__':
         save_dir = '../data/'
     dm.save_mcc(history, save_dir + 'test_results.npy')
 
-    # Plot test results by case
+    # Plot test results by option
     if plots:
-        if case == 1:
+        if option == 1:
 
             # Grab values for culture plot
             x_values = np.arange(n_steps)
@@ -147,7 +156,7 @@ if __name__ == '__main__':
             plt.legend()
             plt.show()
 
-        elif case == 2:
+        elif option == 2:
 
             # Grab values for culture plot
             x_values = np.arange(n_steps)
@@ -155,8 +164,8 @@ if __name__ == '__main__':
                           + history.socialization[:,:,1],axis=1)
             inc = np.mean(history.socialization[:,:,2],axis=1)
             prf = history.performance_org
-            pop1 = mean_level(history.demographics,level,0)
-            pop2 = mean_level(history.demographics,level,1)
+            pop1 = mean_level(history.demographics,levels,0)
+            pop2 = mean_level(history.demographics,levels,1)
 
             # Create figure
             plt.figure(figsize=(9,3))
@@ -183,7 +192,7 @@ if __name__ == '__main__':
             # Show figure
             plt.show()
 
-        elif case == 3:
+        elif option == 3:
 
             # Grab values for culture plot
             x_values = np.arange(n_steps)
@@ -199,7 +208,7 @@ if __name__ == '__main__':
             plt.legend()
             plt.show()
 
-        elif case == 4:
+        elif option == 4:
 
             # Grab values for culture plot
             x_values = np.arange(n_steps)
@@ -215,7 +224,7 @@ if __name__ == '__main__':
             plt.legend()
             plt.show()
 
-        elif case == 5:
+        elif option == 5:
 
             # Grab values for culture plot
             x_values = np.arange(n_steps)
@@ -226,23 +235,45 @@ if __name__ == '__main__':
                 - history.performance_indiv[:,0]
 
             # Create figure
-            plt.figure(figsize=(6,3))
+            plt.figure(figsize=(7,3))
 
             # Plot culture results
-            plt.subplot(121)
+            plt.subplot(131)
             plt.plot(x_values,mcc,label='Contest')
             plt.plot(x_values,inc,label='Inclusiveness')
             plt.ylim(0, 1)
             plt.legend()
 
             # Plot performance results
-            plt.subplot(122)
+            plt.subplot(132)
             plt.plot(x_values,prf,label='Performance')
             plt.ylim(0, 1)
             plt.legend()
 
+            # Plot inclusiveness at each level
+            plt.subplot(133)
+            culture_by_level = dm.culture_level(levels,
+                history.socialization[:,:,0] + history.socialization[:,:,1])
+            plt.plot(x_values,culture_by_level)
+
             # Show figure
             plt.show()
 
+        elif option == 6:
+
+            # Grab values for culture plot
+            x_values = np.arange(n_steps)
+            sim = np.mean(history.socialization[:,:,0],axis=1)
+            perf = np.mean(history.socialization[:,:,1],axis=1)
+            inc = np.mean(history.socialization[:,:,2],axis=1)
+
+            # Plot culture results
+            plt.plot(x_values,sim,label='Similarity')
+            plt.plot(x_values,perf,label='Performance')
+            plt.plot(x_values,inc,label='Inclusiveness')
+            plt.ylim(0, 1)
+            plt.legend()
+            plt.show()
+
         else:
-            print("Not a valid case.")
+            print("Not a valid option.")
