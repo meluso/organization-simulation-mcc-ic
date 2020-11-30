@@ -38,6 +38,30 @@ def load_mcc(file_name):
     return mcc, inc, prf, dem
 
 
+def save_sim_data(data,file_name):
+    """Saves data from a simulation execution."""
+
+    culture = data.socialization
+    org_prf = data.performance_org
+    org_dem = data.demographics
+
+    with open(file_name,'wb') as file:
+        np.save(file,culture)
+        np.save(file,org_prf)
+        np.save(file,org_dem)
+
+
+def load_sim_data(file_name):
+    """Loads data from a simulation execution."""
+
+    with open(file_name, 'rb') as file:
+        culture = np.load(file)
+        org_prf = np.load(file)
+        org_dem = np.load(file)
+
+    return culture, org_prf, org_dem
+
+
 def mcc_cases():
     """Create one instance of each combination of the MCC simulation run
     parameters. Case Structure appears as follows:
@@ -89,6 +113,31 @@ def mcc_cases():
             cases.append(new_case)
             new_case = [n_pops,pop_mode,0.3,0.7,ss,hh]
             cases.append(new_case)
+
+    return cases
+
+
+def sim_cases():
+    """Create one instance of each combination of the simulation run
+    parameters. Case Structure appears as follows:
+        [n_pops,pop_mode,pop1_culture,pop2_culture,pop_start,pop_hire]
+    """
+
+    cases = []
+
+    """Create 1 population uniform cases"""
+    n_pops = 1
+    pop_mode = "uniform_2var"
+    new_case = [n_pops,pop_mode]
+    cases.append(new_case)
+
+    """Create 1 population beta cases"""
+    n_pops = 1
+    pop_mode = "beta_2var"
+    pop1_culture = np.round(np.linspace(0.01,1.0,99,endpoint=False),2)
+    for cc in pop1_culture:
+        new_case = [n_pops,pop_mode,cc]
+        cases.append(new_case)
 
     return cases
 

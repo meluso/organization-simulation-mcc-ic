@@ -31,7 +31,7 @@ class Simulation(object):
         self.index_p1_hire = 5
 
         # Create cases
-        self.cases = dm.mcc_cases()
+        self.cases = dm.sim_cases()
         self.n_steps = n_steps
 
 
@@ -141,7 +141,7 @@ def run_Simulation(test_mode=False):
         filename = output_dir + '/' + case + '_' + job + fileext
 
         # Save results to location specified by platform
-        dm.save_mcc(results,filename)
+        dm.save_sim_data(results,filename)
 
         # Print end time
         t_stop = dt.datetime.now()
@@ -163,7 +163,7 @@ def run_Simulation(test_mode=False):
             filename = output_dir + '/' + case + '_' + job + fileext
 
             # Save results to location specified by platform
-            dm.save_mcc(results,filename)
+            dm.save_sim_data(results,filename)
 
         # Print end time
         t_stop = dt.datetime.now()

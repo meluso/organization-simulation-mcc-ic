@@ -74,9 +74,9 @@ def add_test_pops(option=3):
 
         # Add generic org of beta culture distribution
         pops.append(og.Population(aff_dist="beta_2var",
-                                  aff_sim=0.45,
-                                  aff_perf=0.45,
-                                  aff_inc=0.1))
+                                  aff_sim=0.1,
+                                  aff_perf=0.1,
+                                  aff_inc=0.8))
 
     # OPTION 5: One beta-distributed population with a 2-D variable triangle
     elif option == 6:
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     # Specify number of steps to run simulation
     n_steps = 100
-    option = 5
+    option = 1
     plots = True
 
     # Start timer
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         save_dir = '/users/j/m/jmeluso/scratch/culture_sim/data/'
     else:
         save_dir = '../data/'
-    dm.save_mcc(history, save_dir + 'test_results.npy')
+    dm.save_sim_data(history, save_dir + 'test_results.npy')
 
     # Plot test results by option
     if plots:
@@ -235,28 +235,34 @@ if __name__ == '__main__':
                 - history.performance_indiv[:,0]
 
             # Create figure
-            plt.figure(figsize=(7,3))
+            plt.figure(figsize=(7,5))
 
             # Plot culture results
             plt.subplot(131)
             plt.plot(x_values,mcc,label='Contest')
             plt.plot(x_values,inc,label='Inclusiveness')
             plt.ylim(0, 1)
-            plt.legend()
+            plt.legend(loc='upper center',bbox_to_anchor=(0.5, -0.3),borderaxespad=0.)
 
             # Plot performance results
             plt.subplot(132)
             plt.plot(x_values,prf,label='Performance')
             plt.ylim(0, 1)
-            plt.legend()
+            plt.legend(loc='upper center',bbox_to_anchor=(0.5, -0.3),borderaxespad=0.)
 
             # Plot inclusiveness at each level
             plt.subplot(133)
             culture_by_level = dm.culture_level(levels,
                 history.socialization[:,:,0] + history.socialization[:,:,1])
-            plt.plot(x_values,culture_by_level)
+            plt.plot(x_values,culture_by_level[:,0],label='Level 1')
+            plt.plot(x_values,culture_by_level[:,1],label='Level 2')
+            plt.plot(x_values,culture_by_level[:,2],label='Level 3')
+            plt.plot(x_values,culture_by_level[:,3],label='Level 4')
+            plt.plot(x_values,culture_by_level[:,4],label='Level 5')
 
             # Show figure
+            plt.legend(loc='upper center',bbox_to_anchor=(0.5, -0.3),borderaxespad=0.)
+            plt.tight_layout(rect=[0, 0, 1, 0.95])
             plt.show()
 
         elif option == 6:
