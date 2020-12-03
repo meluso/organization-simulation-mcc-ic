@@ -7,10 +7,12 @@ Created on Wed Nov 11 15:34:43 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
-import model.data_manager as dm
+import data_manager as dm
 
 
-def make_scenarios():
+#%% Exec001 Methods
+
+def make_exec001_scen():
     """Specifies the conditions of each scenario. Indexing follows:
     [n_pops,pop_mode,pop1_culture,pop2_culture,pop_start,pop_hire]"""
 
@@ -65,7 +67,7 @@ def make_scenarios():
 
     return scen
 
-def get_scenarios(cases):
+def get_exec001_scen(cases):
     """Gets the cases corresponding to all scenarios. Indexing follows:
     [n_pops,pop_mode,pop1_culture,pop2_culture,pop_start,pop_hire]"""
 
@@ -122,29 +124,51 @@ def get_scenarios(cases):
     return y, z
 
 
-def load_mcc():
+def load_exec001_conditions():
     """Loads all MCC data including cases, scenarios, and scenarios by case."""
 
     # Get complete list of cases run for MCC
-    cases = dm.mcc_cases()
+    cases = dm.cases_exec001()
 
     # Get complete list of scenarios for MCC
-    scen = make_scenarios()
+    scen = make_exec001_scen()
 
     # Get the scenario corresponding to each case
-    paired, indeces = get_scenarios(cases)
+    paired, indeces = get_exec001_scen(cases)
 
     return cases, scen, paired, indeces
 
 
+#%% Exec002 Methods
+
+def load_sim():
+    """Loads all sim data including cases, scenarios, and scenarios by case."""
+
+
+
+
+#%% Call Script
+
 if __name__ == '__main__':
 
-    # Import results
-    mcc, inc, prf, dem, lvl \
-            = dm.load_results('../data/culture_sim_exec001/results.npy')
+    exec_num = 2
+    name = f'../data/culture_sim_exec{exec_num:03}/results.npy'
 
-    # Load MCC Cases & Scenarios
-    cases, scen, paired, indeces = load_mcc()
+    if exec_num == 1:
+
+        # Import results
+        mcc, inc, prf, dem, lvl = dm.load_exec001_results(name)
+
+        # Load MCC Cases & Scenarios
+        cases, scen, paired, indeces = load_exec001_conditions()
+
+    else:
+
+        # Import results
+        mcc, prf, lvl = dm.load_exec002_results(name)
+
+        # Load Sim Cases & Scenarios
+        cases = dm.cases_exec002()
 
 
 
