@@ -11,20 +11,21 @@ import data_manager as dm
 import analysis.data_analysis as da
 
 # Select scenario
-scenario=2
+scenario=1
 
 # Create figure
-plt.figure(figsize=(7.5,5))
+plt.figure(figsize=(7.5,5),dpi=300)
 
 # Import results
 if scenario == 1:
     culture, org_prf, org_dem \
         = dm.load_exec002_data('../data/example_scenario1.npy')
-    plt.suptitle('Example Run w/ Uniform Culture Distribution')
+    #plt.suptitle('Example Run w/ Uniform Culture Distribution')
 else:
     culture, org_prf, org_dem \
         = dm.load_exec002_data('../data/example_scenario2.npy')
-    plt.suptitle('Example Run w/ Beta Culture Distribution & Mean = 0.8')
+    #plt.suptitle('Example Run w/ Beta Culture Distribution & Mean = 0.8')
+
 
 # Import levels
 levels = dm.generate_levels()

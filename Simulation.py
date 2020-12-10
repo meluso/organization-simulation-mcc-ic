@@ -31,7 +31,7 @@ class Simulation(object):
         self.index_p1_hire = 5
 
         # Create cases
-        self.cases = dm.cases_exec002()
+        self.cases = dm.cases_exec003()
         self.n_steps = n_steps
 
 
@@ -142,7 +142,7 @@ def run_Simulation(test_mode=False):
         filename = output_dir + '/' + case + '_' + job + fileext
 
         # Save results to location specified by platform
-        dm.save_exec002_data(results,filename)
+        dm.save_exec003_data(results,filename)
 
         # Print end time
         t_stop = dt.datetime.now()
@@ -164,7 +164,7 @@ def run_Simulation(test_mode=False):
             filename = output_dir + '/' + case + '_' + job + fileext
 
             # Save results to location specified by platform
-            dm.save_exec002_data(results,filename)
+            dm.save_exec003_data(results,filename)
 
         # Print end time
         t_stop = dt.datetime.now()

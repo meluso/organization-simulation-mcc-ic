@@ -162,13 +162,21 @@ if __name__ == '__main__':
         # Load MCC Cases & Scenarios
         cases, scen, paired, indeces = load_exec001_conditions()
 
-    else:
+    elif exec_num == 2:
 
         # Import results
         mcc, prf, lvl = dm.load_exec002_results(name)
 
         # Load Sim Cases & Scenarios
         cases = dm.cases_exec002()
+
+    else:
+
+        # Import results
+        mcc, prf, lvl = dm.load_exec003_results(name)
+
+        # Load Sim Cases & Scenarios
+        cases = dm.cases_exec003()
 
 
 

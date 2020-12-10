@@ -38,8 +38,8 @@ x_values = np.arange(n_steps)
 levels = dm.generate_levels()
 
 # Create the plot
-plt.figure(figsize=(7.5,5))
-plt.suptitle("Avg. of Runs w/ Uniform Culture Distribution")
+plt.figure(figsize=(7.5,5),dpi=300)
+#plt.suptitle("Avg. of Runs w/ Uniform Culture Distribution")
 
 # Plot culture results
 plt.subplot(1,3,1)

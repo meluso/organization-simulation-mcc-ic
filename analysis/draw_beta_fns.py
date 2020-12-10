@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import Organization as og
 
 
-fig, ax = plt.subplots(1, 1)
+fig, ax = plt.subplots(1, 1,dpi=300)
 mu = np.arange(0.1,1,0.2)
 phi = 15
 
@@ -29,6 +29,6 @@ for ii in np.arange(len(mu)):
 ax.legend(loc='best', frameon=False)
 ax.set_xlabel('Dependent Variable (q)')
 ax.set_ylabel('Probability Density')
-ax.set_title('Beta Distributions of Different Mean Values')
+#ax.set_title('Beta Distributions w/ Different Mean Values')
 
 plt.show()

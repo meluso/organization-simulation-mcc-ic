@@ -11,10 +11,10 @@
 #-------------------   End SLURM preamble   -------------------------#
 
 # Specify execution name
-EXNAME=culture_sim_exec002
+EXNAME=culture_sim_exec003
 
 # Copy data from scratch to user directory
-# cp -R ~/scratch/culture_sim/data/$TMPVAR ~/culture_sim/data/$TMPVAR
+cp -R ~/scratch/culture_sim/data/$TMPVAR ~/culture_sim/data/$TMPVAR
 
 # Move to script directory
 cd ~/culture_sim/

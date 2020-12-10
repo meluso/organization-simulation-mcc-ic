@@ -137,7 +137,7 @@ if __name__ == '__main__':
         save_dir = '/users/j/m/jmeluso/scratch/culture_sim/data/'
     else:
         save_dir = 'data/'
-    dm.save_exec002_data(history, save_dir + 'test_results.npy')
+    dm.save_exec003_data(history, save_dir + 'test_results.npy')
 
     # Plot test results by option
     if plots:

@@ -338,11 +338,124 @@ def load_exec002_results(file_name):
     return mcc, prf, lvl
 
 
+#%% Exec003 Methods
+
+def save_exec003_data(data,file_name):
+    """Saves data from a simulation execution."""
+
+    culture = data.socialization
+    org_prf = data.performance_org
+    org_dem = data.demographics
+
+    with open(file_name,'wb') as file:
+        np.save(file,culture)
+        np.save(file,org_prf)
+        np.save(file,org_dem)
+
+
+def load_exec003_data(file_name):
+    """Loads data from a simulation execution."""
+
+    with open(file_name, 'rb') as file:
+        culture = np.load(file)
+        org_prf = np.load(file)
+        org_dem = np.load(file)
+
+    return culture, org_prf, org_dem
+
+
+def cases_exec003():
+    """Create one instance of each combination of the simulation run
+    parameters. Case Structure appears as follows:
+        [n_pops,pop_mode,pop1_culture,pop2_culture,pop_start,pop_hire]
+    """
+
+    cases = []
+
+    """Create 1 population beta cases"""
+    n_pops = 1
+    pop_mode = "beta_2var"
+    pop1_culture = np.round(np.linspace(0.85,1.0,30,endpoint=False),3)
+    for cc in pop1_culture:
+        new_case = [n_pops,pop_mode,cc]
+        cases.append(new_case)
+
+    return cases
+
+
+def combine_exec003(directory,n_cases,n_runs,test=True):
+    """Imports data from a specified directory string and combines them for
+    analysis and plotting."""
+
+    # Start timer
+    t_start = dt.datetime.now()
+
+    # Preset parameters for MCC simulation
+    n_steps = 100
+    n_levels = 5
+    levels = generate_levels()
+
+    # # Create csv for combining data
+    # cols = ['case','run','step','lvl','org_mcc','org_prf','lvl_mcc']
+    # n_cols = len(cols)
+    # n_rows = n_cases*n_runs*n_steps*n_levels
+    # csv_mcc = np.zeros((n_cols,n_rows))
+    # csv_prf = np.zeros((n_cols,n_rows))
+    # csv_lvl = np.zeros((n_cols,n_rows))
+
+    # Create array for combining data
+    arr_mcc = np.zeros((n_cases,n_runs,n_steps))
+    arr_prf = np.zeros((n_cases,n_runs,n_steps))
+    arr_lvl = np.zeros((n_cases,n_runs,n_steps,n_levels))
+
+    # Iteratively open each file if it exists and import contents
+    for ii in np.arange(n_cases):
+        for jj in np.arange(n_runs):
+            file = directory + f'case{ii:04}_run{jj:04}.npy'
+            if os.path.exists(file):
+
+                # Get data from file
+                culture, org_prf, org_dem = load_exec003_data(file)
+
+                # Write results to csv
+
+                # Write results to array
+                xy = culture[:,:,0] + culture[:,:,1]
+                arr_mcc[ii,jj,:] = np.mean(xy,axis=1)
+                arr_prf[ii,jj,:] = org_prf
+                arr_lvl[ii,jj,:,:] = mean_culture_level(levels,xy)
+
+    # Save results
+    if test:
+        loc = directory + 'test_results.npy'
+    else:
+        loc = directory + 'results.npy'
+    with open(loc,'wb') as file:
+        np.save(file,arr_mcc)
+        np.save(file,arr_prf)
+        np.save(file,arr_lvl)
+
+    # Stop timer & print time
+    t_stop = dt.datetime.now()
+    print(t_stop - t_start)
+
+
+def load_exec003_results(file_name):
+    """Loads results from a saved MCC numpy results file."""
+
+    with open(file_name, 'rb') as file:
+        mcc = np.load(file)
+        prf = np.load(file)
+        lvl = np.load(file)
+
+    return mcc, prf, lvl
+
+
 #%% Call Script
 
 if __name__ == '__main__':
 
-    exec_num = 2
+    exec_num = 3
     name = f'culture_sim_exec{exec_num:03}'
 
     if exec_num == 1:
@@ -357,7 +470,7 @@ if __name__ == '__main__':
                 = load_exec001_results(loc + 'test_results.npy')
             subset = lvl[639,1,:,:]
 
-    else:
+    elif exec_num == 2:
 
         if sys.platform.startswith('linux'):
             loc = '/gpfs1/home/j/m/jmeluso/culture_sim/data/' + name + '/'
@@ -366,6 +479,16 @@ if __name__ == '__main__':
             loc = 'data/' + name + '/'
             combine_exec002(loc,100,100)
             mcc, prf, lvl = load_exec002_results(loc + 'test_results.npy')
+
+    else:
+
+        if sys.platform.startswith('linux'):
+            loc = '/gpfs1/home/j/m/jmeluso/culture_sim/data/' + name + '/'
+            combine_exec003(loc,30,500,False)
+        else:
+            loc = 'data/' + name + '/'
+            combine_exec003(loc,30,500)
+            mcc, prf, lvl = load_exec003_results(loc + 'test_results.npy')
 
 
 
