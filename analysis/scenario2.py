@@ -40,18 +40,18 @@ if plot_num == 1:
 
     # Plot culture results
     plt.subplot(1,2,1)
-    plt.plot(x_values,100*mcc[1,:],label='MCC=0.1')
-    plt.plot(x_values,100*mcc[2,:],label='MCC=0.2')
-    plt.plot(x_values,100*mcc[3,:],label='MCC=0.3')
-    plt.plot(x_values,100*mcc[4,:],label='MCC=0.4')
-    plt.plot(x_values,100*mcc[5,:],label='MCC=0.5')
-    plt.plot(x_values,100*mcc[6,:],label='MCC=0.6')
-    plt.plot(x_values,100*mcc[7,:],label='MCC=0.7')
-    plt.plot(x_values,100*mcc[8,:],label='MCC=0.8')
-    plt.plot(x_values,100*mcc[9,:],label='MCC=0.9')
+    plt.plot(x_values,mcc[1,:],label='MCC=0.1')
+    plt.plot(x_values,mcc[2,:],label='MCC=0.2')
+    plt.plot(x_values,mcc[3,:],label='MCC=0.3')
+    plt.plot(x_values,mcc[4,:],label='MCC=0.4')
+    plt.plot(x_values,mcc[5,:],label='MCC=0.5')
+    plt.plot(x_values,mcc[6,:],label='MCC=0.6')
+    plt.plot(x_values,mcc[7,:],label='MCC=0.7')
+    plt.plot(x_values,mcc[8,:],label='MCC=0.8')
+    plt.plot(x_values,mcc[9,:],label='MCC=0.9')
     plt.xlabel('Turns')
-    plt.ylabel('Contest-Orientation Prevalence (%)')
-    plt.ylim(0, 100)
+    plt.ylabel('Contest-Orientation Prevalence')
+    plt.ylim(0, 1)
 
     # Plot performance results
     plt.subplot(1,2,2)
@@ -113,7 +113,8 @@ elif plot_num == 2:
     plt.ylabel('Change in Contest-Orientation (Absolute)')
     plt.xlim(0,1)
     plt.ylim(-0.06,0.015)
-    plt.grid(True)
+    plt.axhline(y=0,color='gray',linewidth=0.5)
+    #plt.grid()
 
     # Plot ax insert
     axins1 = ax1.inset_axes([0.39, 0.56, 0.35, 0.35])
@@ -136,7 +137,8 @@ elif plot_num == 2:
     axins1.set_xticks((0.9,0.945,1.0))
     axins1.set_xticklabels((0.9,0.945,1.0))
     axins1.tick_params(labelsize=9)
-    axins1.grid(True)
+    axins1.axhline(y=0,color='gray',linewidth=0.5)
+    axins1.axvline(x=0.945,color='gray',linewidth=0.5)
     ax1.indicate_inset_zoom(axins1)
 
     # Plot relative change
@@ -150,7 +152,7 @@ elif plot_num == 2:
     plt.ylabel('Change in Contest-Orientation (%)')
     plt.xlim(0,1)
     plt.ylim(-42,2)
-    plt.grid(True)
+    plt.axhline(y=0,color='gray',linewidth=0.5)
 
     # Plot ax insert
     div = 18
@@ -173,7 +175,8 @@ elif plot_num == 2:
     axins2.set_xticks((0.9,0.945,1.0))
     axins2.set_xticklabels((0.9,0.945,1.0))
     axins2.tick_params(labelsize=9)
-    axins2.grid(True)
+    axins2.axhline(y=0,color='gray',linewidth=0.5)
+    axins2.axvline(x=0.945,color='gray',linewidth=0.5)
     ax2.indicate_inset_zoom(axins2)
 
     handles, labels = axins2.get_legend_handles_labels()
@@ -214,7 +217,7 @@ elif plot_num == 3:
     plt.plot(lvl_start[:,0],lvl_mean[:,4],label='Level 5')
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (Absolute)')
-    plt.grid(True)
+    plt.axhline(y=0,color='gray',linewidth=0.5)
 
     # Plot relative change
     ax2 = plt.subplot(1,2,2)
@@ -225,7 +228,7 @@ elif plot_num == 3:
     plt.plot(lvl_start[:,4],100*np.divide(lvl_mean[:,4],lvl_start[:,4]),label='Level 5')
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (%)')
-    plt.grid(True)
+    plt.axhline(y=0,color='gray',linewidth=0.5)
 
     handles, labels = ax2.get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.025),
@@ -245,7 +248,6 @@ elif plot_num == 3:
         axins2.set_xticks((0.9,0.945,1.0))
         axins2.set_xticklabels((0.9,0.945,1.0))
         axins2.tick_params(labelsize=9)
-        axins2.grid(True)
         ax2.indicate_inset_zoom(axins2)
 
     plt.tight_layout(rect=[0, 0.1, 1, 0.95])
@@ -259,7 +261,7 @@ elif plot_num == 4:
 
     # Calculate values to plot
     lvl_mean, lvl_err = mean_confidence_interval(lvl[1:,:,:,:], axis=1)
-    lvl_runs = 100*np.mean(lvl[1:,:,:,:],axis=1)
+    lvl_runs = np.mean(lvl[1:,:,:,:],axis=1)
     lvl_deri = lvl_runs[:,1:,:]-lvl_runs[:,:-1,:]
 
     # Create the plot
@@ -275,7 +277,7 @@ elif plot_num == 4:
     ax.spines['right'].set_color('none')
     ax.tick_params(labelcolor='w', top=False, bottom=False, left=False,
                    right=False)
-    fig.text(0.08, 0.56, 'Contest-Orientation Prevalence (%)',
+    fig.text(0.08, 0.56, 'Contest-Orientation Prevalence',
              ha='center', va='center',
              rotation='vertical')
 
@@ -322,10 +324,10 @@ elif plot_num == 4:
     plt.plot(x_values,lvl_runs[97,:,2],label='Level 3')
     plt.plot(x_values,lvl_runs[97,:,3],label='Level 4')
     plt.plot(x_values,lvl_runs[97,:,4],label='Level 5')
-    plt.fill_between(x_values,
-                     100*(lvl_mean[97,:,1]-lvl_err[97,:,1]),
-                     100*(lvl_mean[97,:,1]+lvl_err[97,:,1]),
-                     color='C1',alpha=0.2)
+    # plt.fill_between(x_values,
+    #                  (lvl_mean[97,:,1]-lvl_err[97,:,1]),
+    #                  (lvl_mean[97,:,1]+lvl_err[97,:,1]),
+    #                  color='C1',alpha=0.2)
     plt.gcf().text(1, 0.20, 'MCC=0.97', fontsize=11)
     ax5.set_xlabel('Turns')
 
@@ -362,7 +364,6 @@ elif plot_num == 5:
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (Absolute)')
     plt.legend()
-    plt.grid(True)
 
     # Plot relative change
     plt.subplot(1,2,2)
@@ -372,7 +373,6 @@ elif plot_num == 5:
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (%)')
     plt.legend()
-    plt.grid(True)
 
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
@@ -405,7 +405,6 @@ elif plot_num == 6:
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (Absolute)')
     plt.ylim(-0.0125, 0.01)
-    plt.grid(True)
 
     # Plot relative change
     ax2 = plt.subplot(1,2,2)
@@ -417,7 +416,6 @@ elif plot_num == 6:
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (%)')
     plt.ylim(-2, 1)
-    plt.grid(True)
 
     handles, labels = ax2.get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.025),
@@ -426,4 +424,49 @@ elif plot_num == 6:
     plt.tight_layout(rect=[0, 0.1, 1, 0.95])
     plt.show()
 
+elif plot_num == 7:
 
+    # Import results & zoomed results
+    loc = '../data/culture_sim_exec002/results.npy'
+    mcc, prf, lvl = dm.load_exec002_results(loc)
+    cases = dm.cases_exec002()
+
+    # Calculate values to plot
+    mcc_start = np.mean(mcc[1:,:,0],axis=1)
+    prf_delta = prf[1:,:,-1] - prf[1:,:,0]
+    prf_dlt_mean, prf_dlt_err = mean_confidence_interval(prf_delta,axis=1)
+    prf_start = prf[1:,:,0]
+    prf_pct_mean, prf_pct_err \
+        = mean_confidence_interval(100*np.divide(prf_delta,prf_start),axis=1)
+
+    # Create the plot
+    fig = plt.figure(figsize=(7,4),
+                           dpi=300
+                           )
+
+    # Create absolute change graph
+    ax1 = plt.subplot(1,2,1)
+    div = 94
+    ax1.plot(mcc_start[:div+1],prf_dlt_mean[:div+1],label='$\Delta C\leq$0')
+    ax1.plot(mcc_start[div:],prf_dlt_mean[div:],label='$\Delta C>$0')
+    ax1.set_xlabel('Starting Contest-Orientation')
+    ax1.set_ylabel('Performance Change (Absolute)')
+    ax1.axhline(y=0,color='gray',linewidth=0.5)
+    ax1.set_xlim(0,1)
+
+    # Create percent change graph
+    ax2 = plt.subplot(1,2,2)
+    div = 94
+    ax2.plot(mcc_start[:div+1],prf_pct_mean[:div+1],label='$\Delta C\leq$0')
+    ax2.plot(mcc_start[div:],prf_pct_mean[div:],label='$\Delta C>$0')
+    ax2.set_xlabel('Starting Contest-Orientation')
+    ax2.set_ylabel('Performance Change (%)')
+    ax2.axhline(y=0,color='gray',linewidth=0.5)
+    ax2.set_xlim(0,1)
+
+    handles, labels = ax2.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.025),
+               borderaxespad=0.,ncol=5)
+
+    plt.tight_layout(rect=[0, 0.1, 1, 0.95])
+    plt.show()
