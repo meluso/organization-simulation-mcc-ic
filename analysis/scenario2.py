@@ -22,7 +22,7 @@ def mean_confidence_interval(data, axis, confidence=0.95):
 
 
 #Specify plot to generate
-plot_num = 2
+plot_num = 8
 
 # Define constants
 n_steps = 100
@@ -469,4 +469,79 @@ elif plot_num == 7:
                borderaxespad=0.,ncol=5)
 
     plt.tight_layout(rect=[0, 0.1, 1, 0.95])
+    plt.show()
+
+elif plot_num == 8:
+
+    # Import results & zoomed results
+    loc = '../data/culture_sim_exec002/results.npy'
+    mcc, prf, lvl = dm.load_exec002_results(loc)
+    loc = '../data/culture_sim_exec003/results.npy'
+    mcc_z, prf_z, lvl_z = dm.load_exec003_results(loc)
+    cases = dm.cases_exec002()
+
+    # Calculate culture change
+    mcc_delta = mcc[1:,:,-1]-mcc[1:,:,0]
+    mcc_delta_z = mcc_z[1:,:,-1]-mcc_z[1:,:,0]
+
+    # Calculate absolute values to plot
+    mcc_start = np.mean(mcc[1:,:,0],axis=1)
+    mcc_start_z = np.mean(mcc_z[1:,:,0],axis=1)
+    mcc_mean, mcc_err = mean_confidence_interval(mcc_delta,axis=1)
+    mcc_mean_z, mcc_err_z = mean_confidence_interval(mcc_delta_z,axis=1)
+
+    # Calculate percent values to plot
+    mcc_pct = 100*np.divide(mcc_mean,mcc_start)
+    mcc_pct_z = 100*np.divide(mcc_mean_z,mcc_start_z)
+    mcc_pct_err = 100*np.divide(mcc_err,mcc_start)
+    mcc_pct_err_z = 100*np.divide(mcc_err_z,mcc_start_z)
+
+    # Create the plot
+    fig = plt.figure(figsize=(4,4),
+                     dpi=300
+                     )
+    #plt.suptitle("Avg. of Runs w/ Beta Culture Distribution")
+
+    # Plot absolute change
+    ax1 = fig.gca()
+    div = 94
+    plt.plot(mcc_start[:div+1],mcc_mean[:div+1],label='$\Delta C\leq$0')
+    plt.plot(mcc_start[div:],mcc_mean[div:],label='$\Delta C>$0')
+    plt.xlabel('Starting Contest-Orientation')
+    plt.ylabel('Change in Contest-Orientation (Absolute)')
+    plt.xlim(0,1)
+    plt.ylim(-0.06,0.015)
+    plt.axhline(y=0,color='gray',linewidth=0.5)
+    #plt.grid()
+
+    # Plot ax insert
+    axins1 = ax1.inset_axes([0.39, 0.56, 0.35, 0.35])
+    div = 18
+    x1, x2, y1, y2 = 0.9, 1.00, -0.0025, 0.0025
+    axins1.set_xlim(x1,x2)
+    axins1.set_ylim(y1,y2)
+
+    axins1.plot(mcc_start_z[:div+1],mcc_mean_z[:div+1],label='$\Delta C\leq$0')
+    axins1.plot(mcc_start_z[div:],mcc_mean_z[div:],label='$\Delta C>$0')
+    axins1.fill_between(mcc_start_z[:div+1],
+                        mcc_mean_z[:div+1] - mcc_err_z[:div+1],
+                        mcc_mean_z[:div+1] + mcc_err_z[:div+1],
+                        color='C0',alpha=0.2,label='$\Delta C\leq0$, 95% CI')
+    axins1.fill_between(mcc_start_z[div:],
+                        mcc_mean_z[div:] - mcc_err_z[div:],
+                        mcc_mean_z[div:] + mcc_err_z[div:],
+                        color='C1',alpha=0.2,label='$\Delta C>0$, 95% CI')
+
+    axins1.set_xticks((0.9,0.945,1.0))
+    axins1.set_xticklabels((0.9,0.945,1.0))
+    axins1.tick_params(labelsize=9)
+    axins1.axhline(y=0,color='gray',linewidth=0.5)
+    axins1.axvline(x=0.945,color='gray',linewidth=0.5)
+    ax1.indicate_inset_zoom(axins1)
+
+    handles, labels = axins1.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.025),
+               borderaxespad=0.,ncol=2)
+
+    plt.tight_layout(rect=[0, 0.15, 1, 0.95])
     plt.show()
