@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import data_manager as dm
 import scipy.stats
+from matplotlib.colors import LinearSegmentedColormap
 
 # CASE, RUNS, STEPS[, LEVELS]
 
@@ -21,8 +22,18 @@ def mean_confidence_interval(data, axis, confidence=0.95):
     return m, h
 
 
+# Create colors
+cbin = {'mcc': '#F47D20', 'ic': '#66AC47'}
+crng_cultures = ['#66AC47','#F47D20']
+crng_levels = ['#000000','#1375AF','#90D4ED']
+crng_perfs = ['#000000','#007155']
+cmap_cultures = LinearSegmentedColormap.from_list("mycmap", crng_cultures)
+cmap_levels = LinearSegmentedColormap.from_list("mycmap", crng_levels)
+list_culture = cmap_cultures(np.linspace(0,1,9))
+list_level = cmap_levels(np.linspace(0,1,5))
+
 #Specify plot to generate
-plot_num = 8
+plot_num = 4
 
 # Define constants
 n_steps = 100
@@ -40,30 +51,19 @@ if plot_num == 1:
 
     # Plot culture results
     plt.subplot(1,2,1)
-    plt.plot(x_values,mcc[1,:],label='MCC=0.1')
-    plt.plot(x_values,mcc[2,:],label='MCC=0.2')
-    plt.plot(x_values,mcc[3,:],label='MCC=0.3')
-    plt.plot(x_values,mcc[4,:],label='MCC=0.4')
-    plt.plot(x_values,mcc[5,:],label='MCC=0.5')
-    plt.plot(x_values,mcc[6,:],label='MCC=0.6')
-    plt.plot(x_values,mcc[7,:],label='MCC=0.7')
-    plt.plot(x_values,mcc[8,:],label='MCC=0.8')
-    plt.plot(x_values,mcc[9,:],label='MCC=0.9')
+    labels = ['MCC=0.1','MCC=0.2','MCC=0.3','MCC=0.4','MCC=0.5','MCC=0.6',
+              'MCC=0.7','MCC=0.8','MCC=0.9']
+    styles = ['-',':','-.','--','-',':','-.','--','-']
+    for ii, (color, label, style) in enumerate(zip(list_culture, labels, styles)):
+        plt.plot(x_values,mcc[ii+1,:],label=label,color=color,ls=style)
     plt.xlabel('Turns')
     plt.ylabel('Contest-Orientation Prevalence')
     plt.ylim(0, 1)
 
     # Plot performance results
     plt.subplot(1,2,2)
-    plt.plot(x_values,prf[1,:],label='MCC=0.1')
-    plt.plot(x_values,prf[2,:],label='MCC=0.2')
-    plt.plot(x_values,prf[3,:],label='MCC=0.3')
-    plt.plot(x_values,prf[4,:],label='MCC=0.4')
-    plt.plot(x_values,prf[5,:],label='MCC=0.5')
-    plt.plot(x_values,prf[6,:],label='MCC=0.6')
-    plt.plot(x_values,prf[7,:],label='MCC=0.7')
-    plt.plot(x_values,prf[8,:],label='MCC=0.8')
-    plt.plot(x_values,prf[9,:],label='MCC=0.9')
+    for ii, (color, label, style) in enumerate(zip(list_culture, labels, styles)):
+        plt.plot(x_values,prf[ii+1,:],label=label,color=color,ls=style)
     plt.xlabel('Turns')
     plt.ylabel('Organization Performance')
     plt.ylim(0, 1)
@@ -71,6 +71,8 @@ if plot_num == 1:
 
     # Show figure
     plt.tight_layout(rect=[0, 0, 1, 0.95])
+    loc = 'C:/Users/Juango the Blue/Documents/2020-2022 (Vermont)/Conferences/Networks 2021'
+    plt.savefig(loc + '/Beta Means.svg')
     plt.show()
 
 elif plot_num == 2:
@@ -107,8 +109,10 @@ elif plot_num == 2:
     # Plot absolute change
     ax1 = plt.subplot(1,2,1)
     div = 94
-    plt.plot(mcc_start[:div+1],mcc_mean[:div+1],label='$\Delta C\leq$0')
-    plt.plot(mcc_start[div:],mcc_mean[div:],label='$\Delta C>$0')
+    plt.plot(mcc_start[:div+1],mcc_mean[:div+1],
+             label='$\Delta C\leq$0',color=cbin['ic'])
+    plt.plot(mcc_start[div:],mcc_mean[div:],
+             label='$\Delta C>$0',color=cbin['mcc'])
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (Absolute)')
     plt.xlim(0,1)
@@ -123,16 +127,18 @@ elif plot_num == 2:
     axins1.set_xlim(x1,x2)
     axins1.set_ylim(y1,y2)
 
-    axins1.plot(mcc_start_z[:div+1],mcc_mean_z[:div+1],label='$\Delta C\leq$0')
-    axins1.plot(mcc_start_z[div:],mcc_mean_z[div:],label='$\Delta C>$0')
+    axins1.plot(mcc_start_z[:div+1],mcc_mean_z[:div+1],
+                label='$\Delta C\leq$0',color=cbin['ic'])
+    axins1.plot(mcc_start_z[div:],mcc_mean_z[div:],
+                label='$\Delta C>$0',color=cbin['mcc'])
     axins1.fill_between(mcc_start_z[:div+1],
                         mcc_mean_z[:div+1] - mcc_err_z[:div+1],
                         mcc_mean_z[:div+1] + mcc_err_z[:div+1],
-                        color='C0',alpha=0.2)
+                        color=cbin['ic'],alpha=0.2)
     axins1.fill_between(mcc_start_z[div:],
                         mcc_mean_z[div:] - mcc_err_z[div:],
                         mcc_mean_z[div:] + mcc_err_z[div:],
-                        color='C1',alpha=0.2)
+                        color=cbin['mcc'],alpha=0.2)
 
     axins1.set_xticks((0.9,0.945,1.0))
     axins1.set_xticklabels((0.9,0.945,1.0))
@@ -145,8 +151,10 @@ elif plot_num == 2:
     ax2 = plt.subplot(1,2,2)
     div = 94
 
-    plt.plot(mcc_start[:div+1],mcc_pct[:div+1],label='$\Delta C\leq$0')
-    plt.plot(mcc_start[div:],mcc_pct[div:],label='$\Delta C>$0')
+    plt.plot(mcc_start[:div+1],mcc_pct[:div+1],
+             label='$\Delta C\leq$0',color=cbin['ic'])
+    plt.plot(mcc_start[div:],mcc_pct[div:],
+             label='$\Delta C>$0',color=cbin['mcc'])
 
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (%)')
@@ -161,16 +169,18 @@ elif plot_num == 2:
     axins2.set_xlim(x1,x2)
     axins2.set_ylim(y1,y2)
 
-    axins2.plot(mcc_start_z[:div+1],mcc_pct_z[:div+1],label='$\Delta C\leq$0')
-    axins2.plot(mcc_start_z[div:],mcc_pct_z[div:],label='$\Delta C>$0')
+    axins2.plot(mcc_start_z[:div+1],mcc_pct_z[:div+1],
+                label='$\Delta C\leq$0',color=cbin['ic'])
+    axins2.plot(mcc_start_z[div:],mcc_pct_z[div:],
+                label='$\Delta C>$0',color=cbin['mcc'])
     axins2.fill_between(mcc_start_z[:div+1],
                         mcc_pct_z[:div+1] - mcc_pct_err_z[:div+1],
                         mcc_pct_z[:div+1] + mcc_pct_err_z[:div+1],
-                        color='C0',alpha=0.2,label='$\Delta C\leq0$, 95% CI')
+                        color=cbin['ic'],alpha=0.2,label='$\Delta C\leq0$, 95% CI')
     axins2.fill_between(mcc_start_z[div:],
                         mcc_pct_z[div:] - mcc_pct_err_z[div:],
                         mcc_pct_z[div:] + mcc_pct_err_z[div:],
-                        color='C1',alpha=0.2,label='$\Delta C>0$, 95% CI')
+                        color=cbin['mcc'],alpha=0.2,label='$\Delta C>0$, 95% CI')
 
     axins2.set_xticks((0.9,0.945,1.0))
     axins2.set_xticklabels((0.9,0.945,1.0))
@@ -184,6 +194,8 @@ elif plot_num == 2:
                borderaxespad=0.,ncol=5)
 
     plt.tight_layout(rect=[0, 0.1, 1, 0.95])
+    loc = 'C:/Users/Juango the Blue/Documents/2020-2022 (Vermont)/Conferences/Networks 2021'
+    plt.savefig(loc + '/Beta Delta Means All.svg')
     plt.show()
 
 elif plot_num == 3:
@@ -210,22 +222,20 @@ elif plot_num == 3:
 
     # Plot absolute change
     ax1 = plt.subplot(1,2,1)
-    plt.plot(lvl_start[:,0],lvl_mean[:,0],label='Level 1')
-    plt.plot(lvl_start[:,0],lvl_mean[:,1],label='Level 2')
-    plt.plot(lvl_start[:,0],lvl_mean[:,2],label='Level 3')
-    plt.plot(lvl_start[:,0],lvl_mean[:,3],label='Level 4')
-    plt.plot(lvl_start[:,0],lvl_mean[:,4],label='Level 5')
+    labels = ['Level 1','Level 2','Level 3','Level 4','Level 5']
+    for ii, (color, label) in enumerate(zip(list_level, labels)):
+        plt.plot(lvl_start[:,0],lvl_mean[:,ii],label=label,color=color)
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (Absolute)')
     plt.axhline(y=0,color='gray',linewidth=0.5)
 
     # Plot relative change
     ax2 = plt.subplot(1,2,2)
-    plt.plot(lvl_start[:,0],100*np.divide(lvl_mean[:,0],lvl_start[:,0]),label='Level 1')
-    plt.plot(lvl_start[:,1],100*np.divide(lvl_mean[:,1],lvl_start[:,1]),label='Level 2')
-    plt.plot(lvl_start[:,2],100*np.divide(lvl_mean[:,2],lvl_start[:,2]),label='Level 3')
-    plt.plot(lvl_start[:,3],100*np.divide(lvl_mean[:,3],lvl_start[:,3]),label='Level 4')
-    plt.plot(lvl_start[:,4],100*np.divide(lvl_mean[:,4],lvl_start[:,4]),label='Level 5')
+    for ii, (color, label) in enumerate(zip(list_level, labels)):
+            plt.plot(lvl_start[:,ii],
+                     100*np.divide(lvl_mean[:,ii],lvl_start[:,ii]),
+                     label=label,
+                     color=color)
     plt.xlabel('Starting Contest-Orientation')
     plt.ylabel('Change in Contest-Orientation (%)')
     plt.axhline(y=0,color='gray',linewidth=0.5)
@@ -251,6 +261,8 @@ elif plot_num == 3:
         ax2.indicate_inset_zoom(axins2)
 
     plt.tight_layout(rect=[0, 0.1, 1, 0.95])
+    loc = 'C:/Users/Juango the Blue/Documents/2020-2022 (Vermont)/Conferences/Networks 2021'
+    plt.savefig(loc + '/Beta Delta Means Levels.svg')
     plt.show()
 
 elif plot_num == 4:
@@ -280,50 +292,39 @@ elif plot_num == 4:
     fig.text(0.08, 0.56, 'Contest-Orientation Prevalence',
              ha='center', va='center',
              rotation='vertical')
+    
+    # Labels
+    labels_levels = ['Level 1','Level 2','Level 3','Level 4','Level 5']
+    labels_culture = ['MCC=0.03','MCC=0.20','MCC=0.50','MCC=0.80','MCC=0.97']
 
     # MCC = 0.1
     ax1 = plt.subplot(5,1,1)
-    plt.plot(x_values,lvl_runs[3,:,0],label='Level 1')
-    plt.plot(x_values,lvl_runs[3,:,1],label='Level 2')
-    plt.plot(x_values,lvl_runs[3,:,2],label='Level 3')
-    plt.plot(x_values,lvl_runs[3,:,3],label='Level 4')
-    plt.plot(x_values,lvl_runs[3,:,4],label='Level 5')
+    for ii, (color, label) in enumerate(zip(list_level, labels_levels)):
+        plt.plot(x_values,lvl_runs[3,:,ii],label=label,color=color)
     plt.gcf().text(1, 0.91, 'MCC=0.03', fontsize=11)
 
     # MCC = 0.3
     ax2 = plt.subplot(5,1,2)
-    plt.plot(x_values,lvl_runs[20,:,0],label='Level 1')
-    plt.plot(x_values,lvl_runs[20,:,1],label='Level 2')
-    plt.plot(x_values,lvl_runs[20,:,2],label='Level 3')
-    plt.plot(x_values,lvl_runs[20,:,3],label='Level 4')
-    plt.plot(x_values,lvl_runs[20,:,4],label='Level 5')
+    for ii, (color, label) in enumerate(zip(list_level, labels_levels)):
+        plt.plot(x_values,lvl_runs[20,:,ii],label=label,color=color)
     plt.gcf().text(1, 0.725, 'MCC=0.20', fontsize=11)
 
     # MCC = 0.5
     ax3 = plt.subplot(5,1,3)
-    plt.plot(x_values,lvl_runs[50,:,0],label='Level 1')
-    plt.plot(x_values,lvl_runs[50,:,1],label='Level 2')
-    plt.plot(x_values,lvl_runs[50,:,2],label='Level 3')
-    plt.plot(x_values,lvl_runs[50,:,3],label='Level 4')
-    plt.plot(x_values,lvl_runs[50,:,4],label='Level 5')
+    for ii, (color, label) in enumerate(zip(list_level, labels_levels)):
+        plt.plot(x_values,lvl_runs[50,:,ii],label=label,color=color)
     plt.gcf().text(1, 0.55, 'MCC=0.50', fontsize=11)
 
     # MCC = 0.7
     ax4 = plt.subplot(5,1,4)
-    plt.plot(x_values,lvl_runs[80,:,0],label='Level 1')
-    plt.plot(x_values,lvl_runs[80,:,1],label='Level 2')
-    plt.plot(x_values,lvl_runs[80,:,2],label='Level 3')
-    plt.plot(x_values,lvl_runs[80,:,3],label='Level 4')
-    plt.plot(x_values,lvl_runs[80,:,4],label='Level 5')
+    for ii, (color, label) in enumerate(zip(list_level, labels_levels)):
+        plt.plot(x_values,lvl_runs[80,:,ii],label=label,color=color)
     plt.gcf().text(1, 0.375, 'MCC=0.80', fontsize=11)
 
     # MCC = 0.9
     ax5 = plt.subplot(5,1,5)
-    plt.plot(x_values,lvl_runs[97,:,0],label='Level 1')
-    plt.plot(x_values,lvl_runs[97,:,1],label='Level 2')
-    plt.plot(x_values,lvl_runs[97,:,2],label='Level 3')
-    plt.plot(x_values,lvl_runs[97,:,3],label='Level 4')
-    plt.plot(x_values,lvl_runs[97,:,4],label='Level 5')
+    for ii, (color, label) in enumerate(zip(list_level, labels_levels)):
+        plt.plot(x_values,lvl_runs[97,:,ii],label=label,color=color)
     # plt.fill_between(x_values,
     #                  (lvl_mean[97,:,1]-lvl_err[97,:,1]),
     #                  (lvl_mean[97,:,1]+lvl_err[97,:,1]),
@@ -336,6 +337,8 @@ elif plot_num == 4:
     fig.legend(handles, labels, loc='lower center',
                bbox_to_anchor=(0.6, 0.025), borderaxespad=0., ncol=5)
     plt.tight_layout(rect=[0.1, 0.08, 1, 1])
+    loc = 'C:/Users/Juango the Blue/Documents/2020-2022 (Vermont)/Conferences/Networks 2021'
+    plt.savefig(loc + '/Beta Run Means Levels.png')
     plt.show()
 
 elif plot_num == 5:

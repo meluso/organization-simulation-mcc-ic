@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import data_manager as dm
 import scipy.stats
+from matplotlib.colors import LinearSegmentedColormap
 
 # CASE, RUNS, STEPS[, LEVELS]
 
@@ -20,6 +21,15 @@ def mean_confidence_interval(data, axis, confidence=0.95):
     h = se * scipy.stats.t.ppf((1 + confidence) / 2., n-1)
     return m, h
 
+
+# Create colors
+cbin = {'mcc': '#F47D20', 'ic': '#66AC47'}
+crng_cultures = ['#66AC47','#F47D20']
+crng_levels = ['#000000','#1375AF','#90D4ED']
+crng_perfs = ['#000000','#007155']
+cmap = LinearSegmentedColormap.from_list("mycmap", crng_levels)
+list_culture = cmap(np.linspace(0,1,9))
+list_level = cmap(np.linspace(0,1,5))
 
 # Import results
 loc = '../data/culture_sim_exec002/results.npy'
@@ -43,8 +53,8 @@ plt.figure(figsize=(7.5,5),dpi=300)
 
 # Plot culture results
 plt.subplot(1,3,1)
-plt.plot(x_values,mcc_mean,label='Contest-Orientation')
-plt.plot(x_values,(1-mcc_mean),label='Inclusiveness')
+plt.plot(x_values,mcc_mean,label='Contest-Orientation',color=cbin['mcc'])
+plt.plot(x_values,(1-mcc_mean),label='Inclusiveness',color=cbin['ic'])
 plt.xlabel('Turns')
 plt.ylabel('Attribute Prevalence')
 plt.ylim(0, 1)
@@ -52,11 +62,9 @@ plt.legend(loc='upper center',bbox_to_anchor=(0.5, -0.2),borderaxespad=0.)
 
 # Plot performance results
 plt.subplot(1,3,2)
-plt.plot(x_values,lvl_mean[:,0],label='Level 1')
-plt.plot(x_values,lvl_mean[:,1],label='Level 2')
-plt.plot(x_values,lvl_mean[:,2],label='Level 3')
-plt.plot(x_values,lvl_mean[:,3],label='Level 4')
-plt.plot(x_values,lvl_mean[:,4],label='Level 5')
+labels = ['Level 1','Level 2','Level 3','Level 4','Level 5']
+for ii, label in enumerate(labels):
+    plt.plot(x_values,lvl_mean[:,ii],label=label,color=list_level[ii])
 plt.xlabel('Turns')
 plt.ylabel('Contest-Orientation Prevalence')
 plt.ylim(0, 1)
@@ -64,7 +72,7 @@ plt.legend(loc='upper center',bbox_to_anchor=(0.5, -0.2),borderaxespad=0.)
 
 # Plot performance results
 plt.subplot(1,3,3)
-plt.plot(x_values,prf_mean,label='Performance')
+plt.plot(x_values,prf_mean,label='Performance',color=crng_perfs[1])
 plt.xlabel('Turns')
 plt.ylabel('Organization Performance')
 plt.ylim(0, 1)
@@ -72,4 +80,6 @@ plt.legend(loc='upper center',bbox_to_anchor=(0.5, -0.2),borderaxespad=0.)
 
 # Show figure
 plt.tight_layout(rect=[0, 0, 1, 0.95])
+loc = 'C:/Users/Juango the Blue/Documents/2020-2022 (Vermont)/Conferences/Networks 2021'
+plt.savefig(loc + '/Uniform Means.svg')
 plt.show()
